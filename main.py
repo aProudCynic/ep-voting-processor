@@ -18,6 +18,11 @@ FIDESZ_MEPS = [
     'Trócsányi',
 ]
 
+VOTES = [
+    'For',
+    'Against',
+    'Abstention',
+]
 
 def download_voting_data():
     response = requests.get('https://www.europarl.europa.eu/doceo/document/PV-9-2022-03-01-RCV_FR.xml')
@@ -31,7 +36,7 @@ def load_voting_data():
     with open(VOTING_RECORD_FILE_PATH) as file:
         xml_tree = ElementTree.parse(file)
         root = xml_tree.getroot()
-        against = set()
+        votes = { vote:set() for vote in VOTES }
         for roll_call_vote_result in root:
             for child in roll_call_vote_result:
                 if(child.tag == 'RollCallVote.Description.Text'):
@@ -43,10 +48,8 @@ def load_voting_data():
                             for independent_mep in result:
                                 if independent_mep.text in FIDESZ_MEPS:
                                     vote = current_tag[len('Result.'):]
-                                    if vote == 'Against':
-                                        against.add(paragraph)
-    for paragraph in against:
-        print(paragraph)
+                                    votes[vote].add(paragraph)
+        print(votes)
 
 
 if __name__ == "__main__":
