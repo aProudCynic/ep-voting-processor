@@ -8,10 +8,12 @@ from datetime import date
 
 
 class MEP:
-    name: str
+    first_name: str
+    last_name: str
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, first_name, last_name):
+        self.last_name = last_name
+        self.first_name = first_name
 
 
 class Period:
