@@ -2,6 +2,8 @@ import requests
 from os.path import exists
 import xml.etree.ElementTree as ElementTree
 
+from mep_data_loader import load_mep_data
+
 VOTING_RECORD_FILE_PATH = 'voting_record.xml'
 
 FIDESZ_MEPS = [
@@ -30,7 +32,7 @@ def download_voting_data():
         voting_record_file.write(response.content)
 
 
-def load_voting_data():
+def load_voting_data(party):
     if not exists(VOTING_RECORD_FILE_PATH):
         download_voting_data()
     with open(VOTING_RECORD_FILE_PATH) as file:
@@ -46,11 +48,14 @@ def load_voting_data():
                     for result in child:
                         if result.attrib['Identifier'] == 'NI':
                             for independent_mep in result:
-                                if independent_mep.text in FIDESZ_MEPS:
+                                if independent_mep.text in party.members:
                                     vote = current_tag[len('Result.'):]
                                     votes[vote].add(paragraph)
         print(votes)
 
 
 if __name__ == "__main__":
-    load_voting_data()
+    mep_data = load_mep_data()
+    independents = [political_group for political_group in mep_data if political_group.name == 'Non-attached Members'][0]
+    fidesz = independents.get_member_party('Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt')
+    load_voting_data(fidesz)
