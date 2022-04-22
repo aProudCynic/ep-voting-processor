@@ -12,6 +12,7 @@ VOTES = [
     'Abstention',
 ]
 
+
 def download_voting_data():
     response = requests.get('https://www.europarl.europa.eu/doceo/document/PV-9-2022-03-01-RCV_FR.xml')
     with open(VOTING_RECORD_FILE_PATH, "wb") as voting_record_file:
@@ -24,7 +25,7 @@ def load_voting_data(party):
     with open(VOTING_RECORD_FILE_PATH) as file:
         xml_tree = ElementTree.parse(file)
         root = xml_tree.getroot()
-        votes = { vote:set() for vote in VOTES }
+        votes = {vote: set() for vote in VOTES}
         for roll_call_vote_result in root:
             for child in roll_call_vote_result:
                 if(child.tag == 'RollCallVote.Description.Text'):
