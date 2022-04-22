@@ -61,3 +61,10 @@ class EUPoliticalGroup:
     def __init__(self, name):
         self.name = name
         self.members = []
+
+    def get_member_party(self, member_party_name: str) -> NationalParty:
+        found_national_parties = [
+            member.member for member in self.members if isinstance(member.member, NationalParty) and member_party_name == member.member.name
+        ]
+        assert len(found_national_parties) == 1
+        return found_national_parties[0]
