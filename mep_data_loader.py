@@ -53,7 +53,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
             meps_party = same_party_membership[0].member
         try:
             # optional Mc included for McALLISTER
-            last_name = re.findall(r" [^a-z]{1,}$|Mc[^a-z]{1,}$", mep_name)[0][1:]
+            last_name = extract_last_name(mep_name)
         except IndexError as e:
             print(f'Regex not applicable to {mep_name}')
             raise e
@@ -61,3 +61,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
         mep = MEP(first_name, last_name)
         meps_party.members.append(NationalPartyMembership(mep, date.today()))
     return political_groups
+
+
+def extract_last_name(mep_name):
+    return re.findall(r" [^a-z]{1,}$|Mc[^a-z]{1,}$", mep_name)[0][1:]
