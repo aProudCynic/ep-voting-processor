@@ -6,20 +6,6 @@ from mep_data_loader import load_mep_data
 
 VOTING_RECORD_FILE_PATH = 'voting_record.xml'
 
-FIDESZ_MEPS = [
-    'Bocskor',
-    'Deli',
-    'Deutsch',
-    'Gál',
-    'Győri',
-    'Gyürk',
-    'Hidvéghi',
-    'Járóka',
-    'Kósa',
-    'Schaller-Baross',
-    'Trócsányi',
-]
-
 VOTES = [
     'For',
     'Against',
@@ -46,6 +32,8 @@ def load_voting_data(party):
                 elif 'Result.' in child.tag:
                     current_tag = child.tag
                     for result in child:
+                        vote = current_tag[len('Result.'):]
+                        votes[vote].add(paragraph)
                         if result.attrib['Identifier'] == 'NI':
                             for independent_mep in result:
                                 if independent_mep.text in party.members:
