@@ -8,7 +8,7 @@ from datetime import date
 
 
 class MEP:
-    id: int
+    id: str
     first_name: str
     last_name: str
 

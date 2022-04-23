@@ -23,7 +23,7 @@ def parse_xml(xml_data):
     mep_name = xml_data.find('fullName').text
     mep_party = xml_data.find('nationalPoliticalGroup').text
     mep_political_group = xml_data.find('politicalGroup').text
-    mep_id = int(xml_data.find('id').text)
+    mep_id = xml_data.find('id').text
     return mep_name, mep_party, mep_political_group, mep_id
 
 
