@@ -1,3 +1,5 @@
 .idea
 virtualenv
 voting_record.xml
+.DS_Store
+__pycache__
