@@ -1,13 +1,10 @@
-from datetime import (
-    date,
-    datetime,
-)
 from typing import List
 
 import requests
 import xml.etree.ElementTree as ET
 import re
 
+from const import FIRST_DATE_OF_NINTH_EP_SESSION
 from models import (
     EUPoliticalGroup,
     NationalParty,
@@ -15,8 +12,6 @@ from models import (
     NationalPartyMembership,
     MEP,
 )
-
-FIRST_DATE_OF_NINTH_EP_SESSION = datetime(2019, 7, 2)
 
 
 def parse_xml(xml_data):
