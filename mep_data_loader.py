@@ -1,4 +1,7 @@
-from datetime import date
+from datetime import (
+    date,
+    datetime,
+)
 from typing import List
 
 import requests
@@ -12,6 +15,8 @@ from models import (
     NationalPartyMembership,
     MEP,
 )
+
+FIRST_DATE_OF_NINTH_EP_SESSION = datetime(2019, 7, 2)
 
 
 def parse_xml(xml_data):
@@ -48,7 +53,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
         ]
         if len(same_party_membership) == 0:
             meps_party = NationalParty(mep_party_name)
-            meps_political_group.members.append(EUPoliticalGroupMembership(meps_party, date.today()))
+            meps_political_group.members.append(EUPoliticalGroupMembership(meps_party, FIRST_DATE_OF_NINTH_EP_SESSION))
         else:
             meps_party = same_party_membership[0].member
         try:
@@ -58,7 +63,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
             raise e
         first_name = mep_name[:-len(last_name) - 1]
         mep = MEP(first_name, last_name)
-        meps_party.members.append(NationalPartyMembership(mep, date.today()))
+        meps_party.members.append(NationalPartyMembership(mep, FIRST_DATE_OF_NINTH_EP_SESSION))
     return political_groups
 
 
