@@ -23,7 +23,8 @@ def parse_xml(xml_data):
     mep_name = xml_data.find('fullName').text
     mep_party = xml_data.find('nationalPoliticalGroup').text
     mep_political_group = xml_data.find('politicalGroup').text
-    return mep_name, mep_party, mep_political_group
+    mep_id = int(xml_data.find('id').text)
+    return mep_name, mep_party, mep_political_group, mep_id
 
 
 def fetch_mep_xml() -> str:
@@ -37,7 +38,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
     meps_data = xml_tree.getroot()
     political_groups = []
     for mep_data in meps_data:
-        mep_name, mep_party_name, mep_political_group_name = parse_xml(mep_data)
+        mep_name, mep_party_name, mep_political_group_name, mep_id = parse_xml(mep_data)
         same_political_groups = [
             political_group for political_group in political_groups if political_group.name == mep_political_group_name
         ]
@@ -62,7 +63,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
             print(f'Regex not applicable to {mep_name}')
             raise e
         first_name = mep_name[:-len(last_name) - 1]
-        mep = MEP(first_name, last_name)
+        mep = MEP(mep_id, first_name, last_name)
         meps_party.members.append(NationalPartyMembership(mep, FIRST_DATE_OF_NINTH_EP_SESSION))
     return political_groups
 

@@ -8,10 +8,12 @@ from datetime import date
 
 
 class MEP:
+    id: int
     first_name: str
     last_name: str
 
-    def __init__(self, first_name, last_name):
+    def __init__(self, id, first_name, last_name):
+        self.id = id
         self.last_name = last_name
         self.first_name = first_name
 
