@@ -39,11 +39,7 @@ def select_max_voted(votes: Counter) -> Optional[str]:
 
 
 def process_voting_data(fidesz):
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(stdout)
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
+    logger = create_logger()
     fidesz_epp_voting_comparison = Counter(same=0, different=0)
     fidesz_mep_ids = [fidesz_membership.member.id for fidesz_membership in fidesz.members]
     date_to_examine = date.today()
@@ -86,6 +82,15 @@ def process_voting_data(fidesz):
                             fidesz_epp_voting_comparison['different'] = fidesz_epp_voting_comparison['different'] + 1
         date_to_examine = date_to_examine - timedelta(days=1)
     logger.info(fidesz_epp_voting_comparison)
+
+
+def create_logger():
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(stdout)
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    return logger
 
 
 if __name__ == "__main__":
