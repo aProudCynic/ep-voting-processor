@@ -76,7 +76,7 @@ def process_voting_data(fidesz):
                                 fidesz_eu_parliamentary_group = 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
                                 if political_group_id == 'PPE':
                                     epp_votes[vote] = len(political_group_votes)
-                                elif political_group_id == fidesz_eu_parliamentary_group:
+                                if political_group_id == fidesz_eu_parliamentary_group:
                                     for independent_mep_voting in political_group_votes:
                                         if independent_mep_voting.attrib['PersId'] in fidesz_mep_ids:
                                             fidesz_votes[vote] = fidesz_votes.get(vote, 0) + 1
