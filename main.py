@@ -12,7 +12,10 @@ import requests
 import logging
 import xml.etree.ElementTree as ElementTree
 
-from const import FIRST_DATE_OF_NINTH_EP_SESSION
+from const import (
+    FIRST_DATE_OF_NINTH_EP_SESSION,
+    DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
+)
 from mep_data_loader import load_mep_data
 
 VOTING_RECORD_FILE_PATH = 'voting_record.xml'
@@ -70,9 +73,10 @@ def process_voting_data(fidesz):
                             vote = current_tag[len('Result.'):]
                             for political_group_votes in child:
                                 political_group_id = political_group_votes.attrib['Identifier']
+                                fidesz_eu_parliamentary_group = 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
                                 if political_group_id == 'PPE':
                                     epp_votes[vote] = len(political_group_votes)
-                                elif political_group_id == 'NI':
+                                elif political_group_id == fidesz_eu_parliamentary_group:
                                     for independent_mep_voting in political_group_votes:
                                         if independent_mep_voting.attrib['PersId'] in fidesz_mep_ids:
                                             fidesz_votes[vote] = fidesz_votes.get(vote, 0) + 1
