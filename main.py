@@ -92,6 +92,7 @@ def process_voting_data(fidesz):
                             logger.debug(f'Fidesz voted {fidesz_majority_vote} while EPP with {epp_majority_vote}')
                             fidesz_epp_voting_comparison['different'] = fidesz_epp_voting_comparison['different'] + 1
         date_to_examine = date_to_examine - timedelta(days=1)
+        sleep(1)
     logger.info(fidesz_epp_voting_comparison)
 
 
