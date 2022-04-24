@@ -4,6 +4,7 @@ from datetime import (
     timedelta,
 )
 from typing import Optional
+from sys import stdout
 
 import requests
 import logging
@@ -38,6 +39,11 @@ def select_max_voted(votes: Counter) -> Optional[str]:
 
 
 def process_voting_data(fidesz):
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(stdout)
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
     fidesz_epp_voting_comparison = Counter(same=0, different=0)
     fidesz_mep_ids = [fidesz_membership.member.id for fidesz_membership in fidesz.members]
     date_to_examine = date.today()
