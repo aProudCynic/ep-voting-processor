@@ -3,6 +3,8 @@ from datetime import (
     date,
     timedelta,
 )
+from os.path import exists
+from time import sleep
 from typing import Optional
 from sys import stdout
 
@@ -22,15 +24,19 @@ VOTES = [
 ]
 
 
-def download_voting_data(date_to_examine, logger) -> bool:
-    response = requests.get(f'https://www.europarl.europa.eu/doceo/document/PV-9-{date_to_examine}-RCV_FR.xml')
-    if response.status_code == 200:
-        with open(VOTING_RECORD_FILE_PATH, "wb") as voting_record_file:
-            voting_record_file.write(response.content)
-        return True
-    elif response.status_code == 404:
-        logger.debug(f'file for {date_to_examine} is missing, skipping on the assumption that it is ')
-        return False
+def download_voting_data(date_to_examine, logger) -> Optional[str]:
+    filename = f"xml/{date_to_examine}.xml"
+    if exists(filename):
+        return filename
+    else:
+        response = requests.get(f'https://www.europarl.europa.eu/doceo/document/PV-9-{date_to_examine}-RCV_FR.xml')
+        if response.status_code == 200:
+            with open(filename, "wb") as voting_record_file:
+                voting_record_file.write(response.content)
+            return filename
+        elif response.status_code == 404:
+            logger.debug(f'file for {date_to_examine} is missing, skipping on the assumption that it is ')
+            return None
 
 
 def select_max_voted(votes: Counter) -> Optional[str]:
@@ -44,8 +50,9 @@ def process_voting_data(fidesz):
     fidesz_mep_ids = [fidesz_membership.member.id for fidesz_membership in fidesz.members]
     date_to_examine = date.today()
     while date_to_examine >= FIRST_DATE_OF_NINTH_EP_SESSION:
-        if download_voting_data(date_to_examine, logger):
-            with open(VOTING_RECORD_FILE_PATH) as file:
+        filename = download_voting_data(date_to_examine, logger)
+        if filename:
+            with open(filename) as file:
                 xml_tree = ElementTree.parse(file)
                 root = xml_tree.getroot()
                 for roll_call_vote_result in root:

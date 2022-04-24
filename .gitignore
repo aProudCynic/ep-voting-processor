@@ -3,3 +3,4 @@ virtualenv
 voting_record.xml
 .DS_Store
 __pycache__
+xml
