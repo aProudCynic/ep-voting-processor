@@ -22,9 +22,9 @@ class Period:
     start_date: date
     end_date: Union[date, None]
 
-    def __init__(self, start_date) -> None:
+    def __init__(self, start_date, end_date=None):
         self.start_date = start_date
-        self.end_date = None
+        self.end_date = end_date
 
 
 T = TypeVar('T')
@@ -34,9 +34,9 @@ class Membership(Generic[T]):
     member: T
     membership: Period
 
-    def __init__(self, member, start_date):
+    def __init__(self, member, start_date, end_date=None):
         self.member = member
-        self.membership = Period(start_date)
+        self.membership = Period(start_date, end_date)
 
 
 class NationalPartyMembership(Membership[MEP]):
