@@ -26,6 +26,9 @@ class Period:
         self.start_date = start_date
         self.end_date = end_date
 
+    def is_in_period(self, date_to_check: date):
+        return date_to_check >= self.start_date and (self.end_date is None or date_to_check <= self.end_date)
+
 
 T = TypeVar('T')
 
@@ -43,17 +46,26 @@ class NationalPartyMembership(Membership[MEP]):
     pass
 
 
+class Memberships(Generic[T]):
+    _membeships = list[Membership[T]]
+
+    def __init__(self):
+        self._memberships = []
+
+    def get_members_at(self, date_to_check: date):
+        return [membership.member for membership in self._memberships if membership.period.is_in_period(date_to_check)]
+    
+    def add(self, membership: Membership[T]):
+        self._memberships.append(membership)
+
+
 class NationalParty:
     name: str
-    members: list[NationalPartyMembership]
+    members: Memberships[MEP]
 
     def __init__(self, name):
         self.name = name
-        self.members = []
-
-
-class EUPoliticalGroupMembership(Membership[Union[NationalParty, MEP]]):
-    pass
+        self.members = Memberships()
 
 
 class EUPoliticalGroup:
@@ -70,19 +82,19 @@ class EUPoliticalGroup:
     }
 
     name: str
-    members: list[EUPoliticalGroupMembership]
+    members: Memberships[Union[NationalParty, MEP]]
 
     def __init__(self, name):
         self.id = self._pair_id_with(name)
         self.name = name
-        self.members = []
+        self.members = Memberships()
 
     def get_member_party(self, member_party_name: str) -> NationalParty:
         found_national_parties = [
-            member.member for member in self.members if isinstance(member.member, NationalParty) and member_party_name == member.member.name
+            member for member in self.members.get_members_at(date.today()) if isinstance(member, NationalParty) and member_party_name == member.name
         ]
-        assert len(found_national_parties) == 1
-        return found_national_parties[0]
+        assert len(found_national_parties) == 1 or len(found_national_parties) == 0
+        return found_national_parties[0] if len(found_national_parties) else None
 
     @classmethod
     def _pair_id_with(self, name):

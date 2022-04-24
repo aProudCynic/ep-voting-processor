@@ -50,8 +50,8 @@ def select_max_voted(votes: Counter) -> Optional[str]:
 def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today()):
     logger = create_logger()
     fidesz_epp_voting_comparison = Counter(same=0, different=0)
-    fidesz_mep_ids = [fidesz_membership.member.id for fidesz_membership in fidesz.members]
     date_to_examine = start_date
+    fidesz_mep_ids = [fidesz_member.id for fidesz_member in fidesz.members.get_members_at(date_to_examine)]
     while date_to_examine <= end_date:
         filename = download_voting_data(date_to_examine, logger)
         if filename:

@@ -8,9 +8,8 @@ from const import FIRST_DATE_OF_NINTH_EP_SESSION
 from models import (
     EUPoliticalGroup,
     NationalParty,
-    EUPoliticalGroupMembership,
-    NationalPartyMembership,
     MEP,
+    Membership,
 )
 
 
@@ -43,15 +42,12 @@ def load_mep_data() -> List[EUPoliticalGroup]:
         else:
             assert len(same_political_groups) == 1
             meps_political_group = same_political_groups[0]
-        same_party_membership = [
-            party_membership for party_membership in meps_political_group.members
-            if party_membership.member and party_membership.member.name == mep_party_name
-        ]
-        if len(same_party_membership) == 0:
+        same_party_membership = meps_political_group.get_member_party(mep_party_name)
+        if not same_party_membership:
             meps_party = NationalParty(mep_party_name)
-            meps_political_group.members.append(EUPoliticalGroupMembership(meps_party, FIRST_DATE_OF_NINTH_EP_SESSION))
+            meps_political_group.members.add(Membership(meps_party, FIRST_DATE_OF_NINTH_EP_SESSION))
         else:
-            meps_party = same_party_membership[0].member
+            meps_party = same_party_membership
         try:
             last_name = extract_last_name(mep_name)
         except IndexError as e:
@@ -59,7 +55,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
             raise e
         first_name = mep_name[:-len(last_name) - 1]
         mep = MEP(mep_id, first_name, last_name)
-        meps_party.members.append(NationalPartyMembership(mep, FIRST_DATE_OF_NINTH_EP_SESSION))
+        meps_party.members.add(Membership(mep, FIRST_DATE_OF_NINTH_EP_SESSION))
     return political_groups
 
 
