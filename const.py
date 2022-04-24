@@ -1,3 +1,3 @@
-from datetime import datetime
+from datetime import date
 
-FIRST_DATE_OF_NINTH_EP_SESSION = datetime(2019, 7, 2)
+FIRST_DATE_OF_NINTH_EP_SESSION = date(2019, 7, 2)
