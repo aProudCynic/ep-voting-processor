@@ -97,6 +97,7 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
 
 
 def create_logger():
+    logging.basicConfig(filename='logger.log', encoding='utf-8', level=logging.DEBUG)
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler(stdout)
