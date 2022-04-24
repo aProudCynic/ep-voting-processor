@@ -47,12 +47,12 @@ def select_max_voted(votes: Counter) -> Optional[str]:
     return max_voted if votes[max_voted] > 0 else None
 
 
-def process_voting_data(fidesz):
+def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today()):
     logger = create_logger()
     fidesz_epp_voting_comparison = Counter(same=0, different=0)
     fidesz_mep_ids = [fidesz_membership.member.id for fidesz_membership in fidesz.members]
-    date_to_examine = date.today()
-    while date_to_examine >= FIRST_DATE_OF_NINTH_EP_SESSION:
+    date_to_examine = start_date
+    while date_to_examine <= end_date:
         filename = download_voting_data(date_to_examine, logger)
         if filename:
             with open(filename) as file:
@@ -91,7 +91,7 @@ def process_voting_data(fidesz):
                         else:
                             logger.debug(f'Fidesz voted {fidesz_majority_vote} while EPP with {epp_majority_vote}')
                             fidesz_epp_voting_comparison['different'] = fidesz_epp_voting_comparison['different'] + 1
-        date_to_examine = date_to_examine - timedelta(days=1)
+        date_to_examine = date_to_examine + timedelta(days=1)
         sleep(1)
     logger.info(fidesz_epp_voting_comparison)
 
@@ -109,4 +109,5 @@ if __name__ == "__main__":
     mep_data = load_mep_data()
     independents = [political_group for political_group in mep_data if political_group.name == 'Non-attached Members'][0]
     fidesz = independents.get_member_party('Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt')
-    process_voting_data(fidesz)
+    process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP)
+    process_voting_data(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today())
