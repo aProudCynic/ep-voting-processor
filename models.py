@@ -32,11 +32,11 @@ T = TypeVar('T')
 
 class Membership(Generic[T]):
     member: T
-    membership: Period
+    period: Period
 
     def __init__(self, member, start_date, end_date=None):
         self.member = member
-        self.membership = Period(start_date, end_date)
+        self.period = Period(start_date, end_date)
 
 
 class NationalPartyMembership(Membership[MEP]):
