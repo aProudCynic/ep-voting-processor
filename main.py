@@ -61,38 +61,35 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                 xml_tree = ElementTree.parse(file)
                 root = xml_tree.getroot()
                 for roll_call_vote_result in root:
-                    epp_votes = Counter({vote: 0 for vote in VOTES})
-                    fidesz_votes = Counter({vote: 0 for vote in VOTES})
-                    for child in roll_call_vote_result:
-                        if(child.tag == 'RollCallVote.Description.Text'):
-                            url_part = child.find("a")
-                            voting_identifier = f'{child.text}'
-                            if url_part:
-                                voting_identifier += f' {url_part.text} {url_part.tail}'
-                            logger.debug(f'processing {voting_identifier}')
-                        elif 'Result.' in child.tag:
-                            current_tag = child.tag
-                            vote = current_tag[len('Result.'):]
-                            for political_group_votes in child:
-                                political_group_id = political_group_votes.attrib['Identifier']
-                                fidesz_eu_parliamentary_group = 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
-                                if political_group_id == 'PPE':
-                                    epp_votes[vote] = len(political_group_votes)
-                                if political_group_id == fidesz_eu_parliamentary_group:
-                                    for independent_mep_voting in political_group_votes:
-                                        if independent_mep_voting.attrib['PersId'] in fidesz_mep_ids:
-                                            fidesz_votes[vote] = fidesz_votes.get(vote, 0) + 1
-                    logger.debug(f'EPP: {epp_votes}')
-                    logger.debug(f'Fidesz: {fidesz_votes}')
-                    epp_majority_vote = select_max_voted(epp_votes)
-                    fidesz_majority_vote = select_max_voted(fidesz_votes)
-                    if epp_majority_vote is not None and fidesz_majority_vote is not None:
-                        if epp_majority_vote == fidesz_majority_vote:
-                            logger.debug(f'both voted {fidesz_majority_vote}')
-                            fidesz_epp_voting_comparison['same'] = fidesz_epp_voting_comparison['same'] + 1
-                        else:
-                            logger.debug(f'Fidesz voted {fidesz_majority_vote} while EPP with {epp_majority_vote}')
-                            fidesz_epp_voting_comparison['different'] = fidesz_epp_voting_comparison['different'] + 1
+                    if roll_call_vote_result.tag == "RollCallVote.Result":
+                        epp_votes = Counter({vote: 0 for vote in VOTES})
+                        fidesz_votes = Counter({vote: 0 for vote in VOTES})
+                        voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
+                        voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'
+                        logger.debug(f'processing {voting_identifier}')
+                        for vote in VOTES:
+                            result_by_vote = roll_call_vote_result.find(f'Result.{vote}')
+                            if result_by_vote:
+                                for political_group_votes in result_by_vote:
+                                    political_group_id = political_group_votes.attrib['Identifier']
+                                    fidesz_eu_parliamentary_group = 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
+                                    if political_group_id == 'PPE':
+                                        epp_votes[vote] = len(political_group_votes)
+                                    if political_group_id == fidesz_eu_parliamentary_group:
+                                        for independent_mep_voting in political_group_votes:
+                                            if independent_mep_voting.attrib['PersId'] in fidesz_mep_ids:
+                                                fidesz_votes[vote] = fidesz_votes.get(vote, 0) + 1
+                        logger.debug(f'EPP: {epp_votes}')
+                        logger.debug(f'Fidesz: {fidesz_votes}')
+                        epp_majority_vote = select_max_voted(epp_votes)
+                        fidesz_majority_vote = select_max_voted(fidesz_votes)
+                        if epp_majority_vote is not None and fidesz_majority_vote is not None:
+                            if epp_majority_vote == fidesz_majority_vote:
+                                logger.debug(f'both voted {fidesz_majority_vote}')
+                                fidesz_epp_voting_comparison['same'] = fidesz_epp_voting_comparison['same'] + 1
+                            else:
+                                logger.debug(f'Fidesz voted {fidesz_majority_vote} while EPP with {epp_majority_vote}')
+                                fidesz_epp_voting_comparison['different'] = fidesz_epp_voting_comparison['different'] + 1
         date_to_examine = date_to_examine + timedelta(days=1)
         if not offline:
             sleep(1)
