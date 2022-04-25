@@ -27,19 +27,21 @@ VOTES = [
 ]
 
 
-def download_voting_data(date_to_examine, logger) -> Optional[str]:
+def acquire_voting_data(date_to_examine, logger, offline=False) -> Optional[str]:
     filename = f"xml/{date_to_examine}.xml"
     if exists(filename):
         return filename
-    else:
+    elif not offline:
         response = requests.get(f'https://www.europarl.europa.eu/doceo/document/PV-9-{date_to_examine}-RCV_FR.xml')
         if response.status_code == 200:
             with open(filename, "wb") as voting_record_file:
                 voting_record_file.write(response.content)
             return filename
         elif response.status_code == 404:
-            logger.debug(f'file for {date_to_examine} is missing, skipping on the assumption that it is ')
+            logger.debug(f'file for {date_to_examine} is missing, skipping on the assumption that no vote took place')
             return None
+    else:
+        logger.debug(f'file for {date_to_examine} is missing, skipping due to offline mode')
 
 
 def select_max_voted(votes: Counter) -> Optional[str]:
@@ -47,13 +49,13 @@ def select_max_voted(votes: Counter) -> Optional[str]:
     return max_voted if votes[max_voted] > 0 else None
 
 
-def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today()):
+def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
     fidesz_epp_voting_comparison = Counter(same=0, different=0)
     date_to_examine = start_date
     fidesz_mep_ids = [fidesz_member.id for fidesz_member in fidesz.members.get_members_at(date_to_examine)]
     while date_to_examine <= end_date:
-        filename = download_voting_data(date_to_examine, logger)
+        filename = acquire_voting_data(date_to_examine, logger, offline)
         if filename:
             with open(filename) as file:
                 xml_tree = ElementTree.parse(file)
@@ -92,7 +94,8 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                             logger.debug(f'Fidesz voted {fidesz_majority_vote} while EPP with {epp_majority_vote}')
                             fidesz_epp_voting_comparison['different'] = fidesz_epp_voting_comparison['different'] + 1
         date_to_examine = date_to_examine + timedelta(days=1)
-        sleep(1)
+        if not offline:
+            sleep(1)
     logger.info(fidesz_epp_voting_comparison)
 
 
@@ -110,5 +113,5 @@ if __name__ == "__main__":
     mep_data = load_mep_data()
     independents = [political_group for political_group in mep_data if political_group.name == 'Non-attached Members'][0]
     fidesz = independents.get_member_party('Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt')
-    process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP)
-    process_voting_data(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today())
+    process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
+    process_voting_data(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), True)
