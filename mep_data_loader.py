@@ -21,13 +21,13 @@ def parse_xml(xml_data):
     return mep_name, mep_party, mep_political_group, mep_id
 
 
-def fetch_mep_xml() -> str:
-    response = requests.get("https://www.europarl.europa.eu/meps/en/full-list/xml/")
+def fetch_mep_xml(url: str) -> str:
+    response = requests.get(url)
     return response.text
 
 
 def load_mep_data() -> List[EUPoliticalGroup]:
-    mep_xml = fetch_mep_xml()
+    mep_xml = fetch_mep_xml("https://www.europarl.europa.eu/meps/en/full-list/xml/")
     xml_tree = ET.ElementTree(ET.fromstring(mep_xml))
     meps_data = xml_tree.getroot()
     political_groups = []
