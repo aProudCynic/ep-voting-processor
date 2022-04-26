@@ -111,6 +111,7 @@ def add_outgoing_meps(political_groups: list[EUPoliticalGroup]):
 def load_mep_data() -> List[EUPoliticalGroup]:
     political_groups = load_default_list()
     add_outgoing_meps(political_groups)
+    # TODO modify starts by incoming xml
     return political_groups
 
 
