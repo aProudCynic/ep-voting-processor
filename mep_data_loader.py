@@ -48,13 +48,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
             meps_political_group.members.add(Membership(meps_party, FIRST_DATE_OF_NINTH_EP_SESSION))
         else:
             meps_party = same_party_membership
-        try:
-            last_name = extract_last_name(mep_name)
-        except IndexError as e:
-            print(f'Regex not applicable to {mep_name}')
-            raise e
-        first_name = mep_name[:-len(last_name) - 1]
-        mep = MEP(mep_id, first_name, last_name)
+        mep = MEP(mep_id, mep_name)
         meps_party.members.add(Membership(mep, FIRST_DATE_OF_NINTH_EP_SESSION))
     return political_groups
 
