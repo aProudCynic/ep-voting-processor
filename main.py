@@ -76,6 +76,7 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                                 if result_by_vote:
                                     for political_group_votes in result_by_vote:
                                         political_group_id = political_group_votes.attrib['Identifier']
+                                        # TODO: process membeship change as part of the model, use that instead of baked-in condition
                                         fidesz_eu_parliamentary_group = 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
                                         if political_group_id in EUPoliticalGroup.id_name_pairings[political_group_name]:
                                             epp_votes[vote] = len(political_group_votes)
