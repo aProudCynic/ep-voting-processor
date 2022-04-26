@@ -86,14 +86,14 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                                                     fidesz_votes[vote] = fidesz_votes.get(vote, 0) + 1
                             logger.debug(f'{political_group_name}: {epp_votes}')
                             logger.debug(f'Fidesz: {fidesz_votes}')
-                            epp_majority_vote = select_max_voted(epp_votes)
+                            political_group_majority_vote = select_max_voted(epp_votes)
                             fidesz_majority_vote = select_max_voted(fidesz_votes)
-                            if epp_majority_vote is not None and fidesz_majority_vote is not None:
-                                if epp_majority_vote == fidesz_majority_vote:
+                            if political_group_majority_vote is not None and fidesz_majority_vote is not None:
+                                if political_group_majority_vote == fidesz_majority_vote:
                                     logger.debug(f'both voted {fidesz_majority_vote}')
                                     fidesz_political_group_voting_comparisons[political_group_name]['same'] = fidesz_political_group_voting_comparisons[political_group_name]['same'] + 1
                                 else:
-                                    logger.debug(f'Fidesz voted {fidesz_majority_vote} while {political_group_name} with {epp_majority_vote}')
+                                    logger.debug(f'Fidesz voted {fidesz_majority_vote} while {political_group_name} with {political_group_majority_vote}')
                                     fidesz_political_group_voting_comparisons[political_group_name]['different'] = fidesz_political_group_voting_comparisons[political_group_name]['different'] + 1
         date_to_examine = date_to_examine + timedelta(days=1)
         if not offline:
