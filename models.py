@@ -69,33 +69,53 @@ class NationalParty:
 class EUPoliticalGroup:
 
     id_name_pairings = {
-        "Group of the European People's Party (Christian Democrats)": "PPE",
-        "Group of the Progressive Alliance of Socialists and Democrats in the European Parliament": "S&amp;D",
-        "Renew Europe Group": "Renew",
-        "European Conservatives and Reformists Group": "ECR",
-        "Group of the Greens/European Free Alliance": "Verts/ALE",
-        "The Left group in the European Parliament - GUE/NGL": "The Left",
-        "Identity and Democracy Group": "ID",
-        "Non-attached Members": "NI",
+        "Group of the European People's Party (Christian Democrats)": [
+            "PPE",
+            "EPP",
+        ],
+        "Group of the Progressive Alliance of Socialists and Democrats in the European Parliament": [
+            "S&amp;D",
+            "S&D",
+        ],
+        "Renew Europe Group": [
+            "Renew",
+        ],
+        "European Conservatives and Reformists Group": [
+            "ECR",
+        ],
+        "Group of the Greens/European Free Alliance": [
+            "Verts/ALE",
+            "Greens/EFA",
+        ],
+        "The Left group in the European Parliament - GUE/NGL": [
+            "The Left",
+            "GUE/NGL",
+        ],
+        "Identity and Democracy Group": [
+            "ID"
+        ],
+        "Non-attached Members": [
+            "NI"
+        ],
     }
 
     name: str
     members: Memberships[Union[NationalParty, MEP]]
 
     def __init__(self, name):
-        self.id = self._pair_id_with(name)
+        self.ids = self._pair_ids_with(name)
         self.name = name
         self.members = Memberships()
 
-    def get_member_party(self, member_party_name: str) -> NationalParty:
+    def get_member_party(self, member_party_name: str, member_at=date.today()) -> NationalParty:
         found_national_parties = [
-            member for member in self.members.get_members_at(date.today()) if isinstance(member, NationalParty) and member_party_name == member.name
+            member for member in self.members.get_members_at(member_at) if isinstance(member, NationalParty) and member_party_name == member.name
         ]
         assert len(found_national_parties) == 1 or len(found_national_parties) == 0
         return found_national_parties[0] if len(found_national_parties) else None
 
     @classmethod
-    def _pair_id_with(self, name):
-        id = self.id_name_pairings[name]
-        assert id is not None
-        return id
+    def _pair_ids_with(self, name):
+        ids = self.id_name_pairings[name]
+        assert ids is not None
+        return ids
