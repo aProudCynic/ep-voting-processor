@@ -74,7 +74,7 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                 for political_group_name in EUPoliticalGroup.id_name_pairings:
                     for roll_call_vote_result in root:
                         if roll_call_vote_result.tag == "RollCallVote.Result":
-                            epp_votes = Counter({vote: 0 for vote in VOTES})
+                            political_group_votes = Counter({vote: 0 for vote in VOTES})
                             fidesz_votes = Counter({vote: 0 for vote in VOTES})
                             voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
                             voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'
@@ -87,14 +87,14 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                                         # TODO: process membeship change as part of the model, use that instead of baked-in condition
                                         fidesz_eu_parliamentary_group = 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
                                         if political_group_id in EUPoliticalGroup.id_name_pairings[political_group_name]:
-                                            epp_votes[vote] = len(political_group_votes)
+                                            political_group_votes[vote] = len(political_group_votes)
                                         if political_group_id == fidesz_eu_parliamentary_group:
                                             for mep_voting in political_group_votes:
                                                 if mep_voting.attrib['PersId'] in fidesz_mep_ids:
                                                     fidesz_votes[vote] = fidesz_votes.get(vote, 0) + 1
-                            logger.debug(f'{political_group_name}: {epp_votes}')
+                            logger.debug(f'{political_group_name}: {political_group_votes}')
                             logger.debug(f'Fidesz: {fidesz_votes}')
-                            political_group_majority_vote = select_max_voted(epp_votes)
+                            political_group_majority_vote = select_max_voted(political_group_votes)
                             fidesz_majority_vote = select_max_voted(fidesz_votes)
                             if political_group_majority_vote is not None and fidesz_majority_vote is not None:
                                 fidesz_voting_cohesion_per_voting.append(calculate_cohesion(fidesz_votes))
