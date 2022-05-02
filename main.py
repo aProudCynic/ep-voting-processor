@@ -81,8 +81,8 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                                         if political_group_id in EUPoliticalGroup.id_name_pairings[political_group_name]:
                                             epp_votes[vote] = len(political_group_votes)
                                         if political_group_id == fidesz_eu_parliamentary_group:
-                                            for independent_mep_voting in political_group_votes:
-                                                if independent_mep_voting.attrib['PersId'] in fidesz_mep_ids:
+                                            for mep_voting in political_group_votes:
+                                                if mep_voting.attrib['PersId'] in fidesz_mep_ids:
                                                     fidesz_votes[vote] = fidesz_votes.get(vote, 0) + 1
                             logger.debug(f'{political_group_name}: {epp_votes}')
                             logger.debug(f'Fidesz: {fidesz_votes}')
