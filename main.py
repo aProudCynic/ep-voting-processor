@@ -50,11 +50,19 @@ def select_max_voted(votes: Counter) -> Optional[str]:
     return max_voted if votes[max_voted] > 0 else None
 
 
+def calculate_cohesion(fidesz_votes: Counter) -> float:
+    fidesz_majority_vote = select_max_voted(fidesz_votes)
+    majority_vote_count = fidesz_votes[fidesz_majority_vote]
+    total_vote_count = sum(fidesz_votes.values())
+    return majority_vote_count / total_vote_count * 100
+
+
 def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
     fidesz_political_group_voting_comparisons = {
         political_group_name_ids: Counter(same=0, different=0) for political_group_name_ids in EUPoliticalGroup.id_name_pairings
     }
+    fidesz_voting_cohesion_per_voting = []
     date_to_examine = start_date
     fidesz_mep_ids = [fidesz_member.id for fidesz_member in fidesz.members.get_members_at(date_to_examine)]
     while date_to_examine <= end_date:
@@ -89,6 +97,7 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                             political_group_majority_vote = select_max_voted(epp_votes)
                             fidesz_majority_vote = select_max_voted(fidesz_votes)
                             if political_group_majority_vote is not None and fidesz_majority_vote is not None:
+                                fidesz_voting_cohesion_per_voting.append(calculate_cohesion(fidesz_votes))
                                 if political_group_majority_vote == fidesz_majority_vote:
                                     logger.debug(f'both voted {fidesz_majority_vote}')
                                     fidesz_political_group_voting_comparisons[political_group_name]['same'] = fidesz_political_group_voting_comparisons[political_group_name]['same'] + 1
@@ -101,6 +110,8 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
     logger.info(fidesz_political_group_voting_comparisons)
     percentages = {political_group_name: fidesz_political_group_voting_comparisons[political_group_name]['same'] / (fidesz_political_group_voting_comparisons[political_group_name]['same'] + fidesz_political_group_voting_comparisons[political_group_name]['different']) * 100 for political_group_name in EUPoliticalGroup.id_name_pairings}
     logger.info(percentages)
+    fidesz_cohesion_overall_average = sum(fidesz_voting_cohesion_per_voting) / len(fidesz_voting_cohesion_per_voting)
+    logger.info(fidesz_cohesion_overall_average)
 
 
 def create_logger():
