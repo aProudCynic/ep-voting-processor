@@ -74,8 +74,8 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                 for political_group_name in EUPoliticalGroup.id_name_pairings:
                     for roll_call_vote_result in root:
                         if roll_call_vote_result.tag == "RollCallVote.Result":
-                            political_group_votes = Counter({vote: 0 for vote in VOTES})
-                            fidesz_votes = Counter({vote: 0 for vote in VOTES})
+                            political_group_votes_counter = Counter({vote: 0 for vote in VOTES})
+                            fidesz_votes_counter = Counter({vote: 0 for vote in VOTES})
                             voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
                             voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'
                             logger.debug(f'processing {voting_identifier}')
@@ -87,17 +87,17 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
                                         # TODO: process membeship change as part of the model, use that instead of baked-in condition
                                         fidesz_eu_parliamentary_group = 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
                                         if political_group_id in EUPoliticalGroup.id_name_pairings[political_group_name]:
-                                            political_group_votes[vote] = len(political_group_votes)
+                                            political_group_votes_counter[vote] = len(political_group_votes)
                                         if political_group_id == fidesz_eu_parliamentary_group:
                                             for mep_voting in political_group_votes:
                                                 if mep_voting.attrib['PersId'] in fidesz_mep_ids:
-                                                    fidesz_votes[vote] = fidesz_votes.get(vote, 0) + 1
+                                                    fidesz_votes_counter[vote] = fidesz_votes_counter.get(vote, 0) + 1
                             logger.debug(f'{political_group_name}: {political_group_votes}')
-                            logger.debug(f'Fidesz: {fidesz_votes}')
-                            political_group_majority_vote = select_max_voted(political_group_votes)
-                            fidesz_majority_vote = select_max_voted(fidesz_votes)
+                            logger.debug(f'Fidesz: {fidesz_votes_counter}')
+                            political_group_majority_vote = select_max_voted(political_group_votes_counter)
+                            fidesz_majority_vote = select_max_voted(fidesz_votes_counter)
                             if political_group_majority_vote is not None and fidesz_majority_vote is not None:
-                                fidesz_voting_cohesion_per_voting.append(calculate_cohesion(fidesz_votes))
+                                fidesz_voting_cohesion_per_voting.append(calculate_cohesion(fidesz_votes_counter))
                                 if political_group_majority_vote == fidesz_majority_vote:
                                     logger.debug(f'both voted {fidesz_majority_vote}')
                                     fidesz_political_group_voting_comparisons[political_group_name]['same'] = fidesz_political_group_voting_comparisons[political_group_name]['same'] + 1
@@ -128,5 +128,5 @@ if __name__ == "__main__":
     mep_data = load_mep_data()
     independents = [political_group for political_group in mep_data if political_group.name == 'Non-attached Members'][0]
     fidesz = independents.get_member_party('Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt')
-    process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
-    process_voting_data(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), True)
+    # process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
+    process_voting_data(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), False)
