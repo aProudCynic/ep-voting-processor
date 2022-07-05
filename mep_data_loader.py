@@ -30,6 +30,37 @@ def fetch_mep_xml(url: str) -> str:
     return response.text
 
 
+def load_incoming_meps(political_groups: list[EUPoliticalGroup]):
+    mep_xml = fetch_mep_xml("https://www.europarl.europa.eu/meps/en/incoming-outgoing/incoming/xml")
+    xml_tree = ET.ElementTree(ET.fromstring(mep_xml))
+    incoming_data = xml_tree.getroot()
+    for mep_data in incoming_data:
+        political_group_id = mep_data.find("politicalGroup").attrib['bodyCode']
+        try:
+            meps_political_group = [
+                political_group for political_group in political_groups if political_group_id in political_group.ids
+            ][0]
+        except Exception as e:
+            print(political_group_id)
+            raise e
+        meps_party_name = mep_data.find("nationalPoliticalGroup").text
+        print(meps_party_name)
+        start_date = parse_to_date(mep_data, "mandate-start")
+        end_date = parse_to_date(mep_data, "mandate-end")
+        meps_party = meps_political_group.get_member_party(meps_party_name)
+        if meps_party is None:
+            meps_party = search_meps_party_in_other_groups(political_groups, meps_party_name, end_date)
+            if meps_party is None:
+                meps_party = NationalParty(meps_party_name)
+                meps_political_group.members.add(Membership(meps_party, start_date))
+        name = mep_data.find("fullName").text
+        id = mep_data.find("id").text
+
+        mep = [mep for mep in meps_party.members.get_members_at(start_date) if mep.name == name]
+        assert mep is not None
+        mep
+
+
 def load_default_list() -> List[EUPoliticalGroup]:
     mep_xml = fetch_mep_xml("https://www.europarl.europa.eu/meps/en/full-list/xml/")
     xml_tree = ET.ElementTree(ET.fromstring(mep_xml))
@@ -59,7 +90,7 @@ def load_default_list() -> List[EUPoliticalGroup]:
 
 def parse_to_date(mep_data, tag_name):
     unparsed_date = mep_data.find(tag_name).text
-    return datetime.strptime(unparsed_date, "%d/%m/%Y").date()
+    return None if unparsed_date == 'ONGOING' else datetime.strptime(unparsed_date, "%d/%m/%Y").date()
 
 
 def search_meps_party_in_other_groups(
@@ -67,10 +98,11 @@ def search_meps_party_in_other_groups(
         meps_party_name: str,
         date_at_check: date,
 ) -> Optional[NationalParty]:
+    date_to_check = date.today() if date_at_check is None else date_at_check
     other_groups_containing_party = [
         political_group
         for political_group in political_groups
-        if political_group.get_member_party(meps_party_name, date_at_check)
+        if political_group.get_member_party(meps_party_name, date_to_check)
     ]
     assert len(other_groups_containing_party) < 2
     # TODO resolve memberships' date
@@ -110,6 +142,7 @@ def add_outgoing_meps(political_groups: list[EUPoliticalGroup]):
 
 def load_mep_data() -> List[EUPoliticalGroup]:
     political_groups = load_default_list()
+    incoming_meps = load_incoming_meps(political_groups)
     add_outgoing_meps(political_groups)
     # TODO modify starts by incoming xml
     return political_groups
