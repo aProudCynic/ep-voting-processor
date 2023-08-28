@@ -2,6 +2,7 @@ from datetime import datetime, date
 from typing import (
     List,
     Optional,
+    Tuple,
 )
 
 import requests
@@ -17,9 +18,10 @@ from models import (
 )
 
 
-def parse_xml(xml_data):
+def parse_xml(xml_data) -> Tuple[str, Optional[str], str, str]:
     mep_name = xml_data.find('fullName').text
-    mep_party = xml_data.find('nationalPoliticalGroup').text
+    mep_party_container = xml_data.find('nationalPoliticalGroup')
+    mep_party = mep_party_container.text if mep_party_container else None
     mep_political_group = xml_data.find('politicalGroup').text
     mep_id = xml_data.find('id').text
     return mep_name, mep_party, mep_political_group, mep_id
