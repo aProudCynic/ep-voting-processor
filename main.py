@@ -3,6 +3,7 @@ from datetime import (
     date,
     timedelta,
 )
+from os import makedirs
 from os.path import exists
 from time import sleep
 from typing import Optional
@@ -29,10 +30,13 @@ VOTES = [
 
 
 def acquire_voting_data(date_to_examine, logger, offline=False) -> Optional[str]:
-    filename = f"xml/{date_to_examine}.xml"
+    foldername = "xml"
+    filename = f"{foldername}/{date_to_examine}.xml"
     if exists(filename):
         return filename
     elif not offline:
+        if not exists(foldername):
+            makedirs(foldername)
         response = requests.get(f'https://www.europarl.europa.eu/doceo/document/PV-9-{date_to_examine}-RCV_FR.xml')
         if response.status_code == 200:
             with open(filename, "wb") as voting_record_file:
