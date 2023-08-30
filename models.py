@@ -45,7 +45,7 @@ class NationalPartyMembership(Membership[MEP]):
 
 
 class Memberships(Generic[T]):
-    _membeships = list[Membership[T]]
+    _memberships: list[Membership[T]]
 
     def __init__(self):
         self._memberships = []
