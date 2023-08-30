@@ -56,6 +56,11 @@ class Memberships(Generic[T]):
     def add(self, membership: Membership[T]):
         self._memberships.append(membership)
 
+    def set_membership_period_for(self, member: T, period: Period):
+        memberships = [membership for membership in self._memberships if membership.member == member]
+        assert len(Membership) == 1
+        memberships[0].period = period
+
 
 class NationalParty:
     name: str
