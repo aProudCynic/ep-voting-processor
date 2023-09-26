@@ -1,4 +1,5 @@
 from typing import (
+    Optional,
     Union,
     TypeVar,
     Generic,
@@ -10,10 +11,23 @@ from datetime import date
 class MEP:
     id: str
     name: str
+    country: str
 
-    def __init__(self, id, name):
+    def __init__(self, id: str, name: str, country: str):
         self.id = id
         self.name = name
+        self.country = country
+
+    def __key(self):
+        return (self.id)
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self.__key() == other.__key()
+        return NotImplemented
 
 
 class Period:
@@ -64,11 +78,24 @@ class Memberships(Generic[T]):
 
 class NationalParty:
     name: str
+    country: Optional[str]
     members: Memberships[MEP]
 
-    def __init__(self, name):
+    def __init__(self, name, country=None):
         self.name = name
+        self.country = country
         self.members = Memberships()
+
+    def __key(self):
+        return (self.name, self.country)
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self.__key() == other.__key()
+        return NotImplemented
 
 
 class EUPoliticalGroup:
@@ -104,11 +131,12 @@ class EUPoliticalGroup:
         ],
     }
 
+    ids: list[str]
     name: str
     members: Memberships[Union[NationalParty, MEP]]
 
-    def __init__(self, name):
-        self.ids = self._pair_ids_with(name)
+    def __init__(self, ids: list[str], name: str):
+        self.ids = ids
         self.name = name
         self.members = Memberships()
 
