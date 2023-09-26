@@ -215,6 +215,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
                 unparsed_period = child.select_one("strong").text
                 period = extract_period_from(unparsed_period)
                 political_group_name = extract_political_group_from(child.text, unparsed_period)
+                # TODO add party
             national_parties_container = details_containers[1]
             national_parties_container_children = national_parties_container.findChildren("li" , recursive=False)
             for child in national_parties_container_children:
