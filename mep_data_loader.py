@@ -222,7 +222,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
                 unparsed_period = child.select_one("strong").text
                 period = extract_period_from(unparsed_period)
                 national_party_name, national_party_nation = extract_national_party_from(child.text, unparsed_period)
-                national_party = [party for party in national_parties if party.name == national_party_name]
+                national_party = [party for party in national_parties if party.name == national_party_name and party.country == national_party_nation]
                 assert len(national_party) < 2
                 if len(national_party) == 1:
                     national_party[0].members.add(Membership(mep, period.start_date, period.end_date))
