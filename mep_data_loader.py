@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from time import sleep, strptime
 from typing import (
     List,
     Optional,
@@ -6,17 +7,30 @@ from typing import (
 )
 
 import requests
+from bs4 import BeautifulSoup, Tag
 import xml.etree.ElementTree as ET
 import re
+import logging
 
 from const import FIRST_DATE_OF_NINTH_EP_SESSION
+from logger import create_logger
 from models import (
     EUPoliticalGroup,
     NationalParty,
     MEP,
     Membership,
+    Period,
 )
 
+POLITICAL_GROUPS = {
+    EUPoliticalGroup("Group of the European People's Party (Christian Democrats)", ["PPE", "EPP"]),
+    EUPoliticalGroup("Group of the Progressive Alliance of Socialists and Democrats in the European Parliament", ["S&amp;D", "S&D"]),
+    EUPoliticalGroup("Renew Europe Group", ["ECR"]),
+    EUPoliticalGroup("Group of the Greens/European Free Alliance", ["Verts/ALE", "Greens/EFA"]),
+    EUPoliticalGroup("The Left group in the European Parliament - GUE/NGL", ["The Left", "GUE/NGL"]),
+    EUPoliticalGroup("Identity and Democracy Group", ["ID"]),
+    EUPoliticalGroup("Non-attached Members", ["NI"])
+}
 
 def parse_xml(xml_data) -> Tuple[str, Optional[str], str, str]:
     mep_name = xml_data.find('fullName').text
@@ -32,7 +46,7 @@ def fetch_mep_xml(url: str) -> str:
     return response.text
 
 
-def load_incoming_meps(political_groups: list[EUPoliticalGroup]):
+def combine_with_incoming_mep_data(political_groups: list[EUPoliticalGroup]) -> list[EUPoliticalGroup]:
     mep_xml = fetch_mep_xml("https://www.europarl.europa.eu/meps/en/incoming-outgoing/incoming/xml")
     xml_tree = ET.ElementTree(ET.fromstring(mep_xml))
     incoming_data = xml_tree.getroot()
@@ -50,13 +64,16 @@ def load_incoming_meps(political_groups: list[EUPoliticalGroup]):
         start_date = parse_to_date(mep_data, "mandate-start")
         end_date = parse_to_date(mep_data, "mandate-end")
         meps_party = meps_political_group.get_member_party(meps_party_name)
+        name = mep_data.find("fullName").text
+        id = mep_data.find("id").text
         if meps_party is None:
             meps_party = search_meps_party_in_other_groups(political_groups, meps_party_name, end_date)
             if meps_party is None:
+                new_mep_data = MEP(id, name)
                 meps_party = NationalParty(meps_party_name)
+                meps_party.members.add(Members)
                 meps_political_group.members.add(Membership(meps_party, start_date))
-        name = mep_data.find("fullName").text
-        id = mep_data.find("id").text
+        
 
         mep = [mep for mep in meps_party.members.get_members_at(start_date) if mep.name == name]
         assert mep is not None
@@ -142,14 +159,112 @@ def add_outgoing_meps(political_groups: list[EUPoliticalGroup]):
         meps_party.members.add(membership)
 
 
-def load_mep_data() -> List[EUPoliticalGroup]:
-    political_groups = load_default_list()
-    incoming_meps = load_incoming_meps(political_groups)
-    add_outgoing_meps(political_groups)
-    # TODO modify starts by incoming xml
-    return political_groups
+def create_mep_from(mep_data: ET.Element) -> MEP:
+    mep_id = mep_data.find('id').text
+    mep_name = mep_data.find('fullName').text
+    country = mep_data.find('country').text
+    return MEP(mep_id, mep_name, country)
 
+def create_meps_from(xml_address: str) -> set[MEP]:
+    mep_xml = fetch_mep_xml(xml_address)
+    xml_tree = ET.ElementTree(ET.fromstring(mep_xml))
+    root_data = xml_tree.getroot()
+    return {create_mep_from(mep_data) for mep_data in root_data}
+
+def create_national_party_from(mep_data: ET.Element) -> Optional[NationalParty]:
+    party_name_container = mep_data.find('nationalPoliticalGroup')
+    if party_name_container is None or not party_name_container.text:
+        return None
+    party_name = party_name_container.text
+    if party_name == "Independent":
+        return NationalParty(party_name)
+    country = mep_data.find('country').text
+    return NationalParty(party_name, country)
+    
+
+def create_national_parties_from(xml_address: str) -> set[NationalParty]:
+    mep_xml = fetch_mep_xml(xml_address)
+    xml_tree = ET.ElementTree(ET.fromstring(mep_xml))
+    root_data = xml_tree.getroot()
+    return {create_national_party_from(mep_data) for mep_data in root_data}
+
+
+def load_mep_data() -> List[EUPoliticalGroup]:
+    logger = create_logger()
+    # default_mep_data = load_default_list()
+    # meps_with_incoming_data = combine_with_incoming_mep_data(default_mep_data)
+    # full_mep_data = add_outgoing_meps(meps_with_incoming_data)
+    current_meps = create_meps_from("https://www.europarl.europa.eu/meps/en/full-list/xml/")
+    former_meps = create_meps_from("https://www.europarl.europa.eu/meps/en/incoming-outgoing/outgoing/xml")
+    all_meps = current_meps.union(former_meps)
+    national_parties = create_national_parties_from("https://www.europarl.europa.eu/meps/en/full-list/xml/").union(
+        create_national_parties_from("https://www.europarl.europa.eu/meps/en/incoming-outgoing/outgoing/xml").union(
+            create_national_parties_from("https://www.europarl.europa.eu/meps/en/incoming-outgoing/incoming/xml")            
+        )
+    )
+    for mep in all_meps:
+        url_name_part = mep.name.upper().replace(" ", "_")
+        mep_data_url = f"https://www.europarl.europa.eu/meps/en/{mep.id}/{url_name_part}/history/9#detailedcardmep"
+        soup = extract_soup_from(mep_data_url)
+        logging.info(f"processing {mep_data_url}...")
+        details_containers = soup.select(".erpl_meps-status-list > .erpl_meps-status > ul")
+        political_groups_container = details_containers[0]
+        political_groups_container_children = political_groups_container.findChildren("li" , recursive=False)
+        for child in political_groups_container_children:
+            unparsed_period = child.select_one("strong").text
+            period = extract_period_from(unparsed_period)
+            political_group_name = extract_political_group_from(child.text, unparsed_period)
+        national_parties_container = details_containers[1]
+        national_parties_container_children = national_parties_container.findChildren("li" , recursive=False)
+        for child in national_parties_container_children:
+            unparsed_period = child.select_one("strong").text
+            period = extract_period_from(unparsed_period)
+            national_party_name, national_party_nation = extract_national_party_from(child.text, unparsed_period)
+            national_party = [party for party in national_parties if party.name == national_party_name]
+            assert len(national_party) < 2
+            if len(national_party) == 1:
+                national_party[0].members.add(Membership(mep, period.start_date, period.end_date))
+            else:
+                new_party = NationalParty(national_party_name, national_party_nation)
+                new_party.members.add(Membership(mep, period.start_date, period.end_date))
+
+
+def extract_national_party_from(child: str, unparsed_period: str) -> tuple[str, str]:
+    party_name_start = len(unparsed_period) + len(" : ")
+    party_name_end = child.rindex(" (")
+    party_name = child[party_name_start:party_name_end]
+    party_nation_start = party_name_end + len(" (")
+    party_nation = child[party_nation_start:]
+    return party_name, party_nation
+
+def extract_political_group_from(party_membership_info: str, unparsed_period: str) -> str:
+    if "Non-attached Members" in party_membership_info:
+        return "Non-attached Members"
+    group_name_start = len(unparsed_period) + len(" : ")
+    group_name_end = party_membership_info.rindex(" - ")
+    return party_membership_info[group_name_start:group_name_end]
+
+def extract_period_from(unparsed_period: str) -> Period:
+    if " / " in unparsed_period:
+        dates = unparsed_period.split(" / ")
+        start_date = strptime(dates[0], "%d-%m-%Y")
+        end_date = strptime(dates[0], "%d-%m-%Y")
+        return Period(start_date, end_date)
+    elif "..." in unparsed_period:
+        start_date = strptime(unparsed_period[:10], "%d-%m-%Y")
+        return Period(start_date)
+    else:
+        raise AssertionError(f"Neither divider character nor ellipsis is detected in date string: {unparsed_period}")
+    
 
 def extract_last_name(mep_name):
     # David McAllister is the only MEP with non-capitalized last name
     return re.findall(r" [^a-z]+$| McALLISTER$", mep_name)[0][1:]
+
+def extract_soup_from(url: str) -> BeautifulSoup:
+    try:
+        page = requests.get(url)
+    except Exception:
+        sleep(3)
+        page = requests.get(url)
+    return BeautifulSoup(page.content, 'html.parser')

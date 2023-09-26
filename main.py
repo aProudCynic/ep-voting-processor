@@ -17,6 +17,7 @@ from const import (
     FIRST_DATE_OF_NINTH_EP_SESSION,
     DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
 )
+from logger import create_logger
 from mep_data_loader import load_mep_data
 from models import EUPoliticalGroup
 
@@ -116,16 +117,6 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
     logger.info(percentages)
     fidesz_cohesion_overall_average = sum(fidesz_voting_cohesion_per_voting) / len(fidesz_voting_cohesion_per_voting)
     logger.info(fidesz_cohesion_overall_average)
-
-
-def create_logger():
-    logging.basicConfig(filename='logger.log', encoding='utf-8', level=logging.DEBUG)
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler(stdout)
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
-    return logger
 
 
 if __name__ == "__main__":
