@@ -208,26 +208,28 @@ def load_mep_data() -> List[EUPoliticalGroup]:
         soup = extract_soup_from(mep_data_url)
         logging.info(f"processing {mep_data_url}...")
         details_containers = soup.select(".erpl_meps-status-list > .erpl_meps-status > ul")
-        political_groups_container = details_containers[0]
-        political_groups_container_children = political_groups_container.findChildren("li" , recursive=False)
-        for child in political_groups_container_children:
-            unparsed_period = child.select_one("strong").text
-            period = extract_period_from(unparsed_period)
-            political_group_name = extract_political_group_from(child.text, unparsed_period)
-        national_parties_container = details_containers[1]
-        national_parties_container_children = national_parties_container.findChildren("li" , recursive=False)
-        for child in national_parties_container_children:
-            unparsed_period = child.select_one("strong").text
-            period = extract_period_from(unparsed_period)
-            national_party_name, national_party_nation = extract_national_party_from(child.text, unparsed_period)
-            national_party = [party for party in national_parties if party.name == national_party_name]
-            assert len(national_party) < 2
-            if len(national_party) == 1:
-                national_party[0].members.add(Membership(mep, period.start_date, period.end_date))
-            else:
-                new_party = NationalParty(national_party_name, national_party_nation)
-                new_party.members.add(Membership(mep, period.start_date, period.end_date))
-
+        if len(details_containers) > 0:
+            political_groups_container = details_containers[0]
+            political_groups_container_children = political_groups_container.findChildren("li" , recursive=False)
+            for child in political_groups_container_children:
+                unparsed_period = child.select_one("strong").text
+                period = extract_period_from(unparsed_period)
+                political_group_name = extract_political_group_from(child.text, unparsed_period)
+            national_parties_container = details_containers[1]
+            national_parties_container_children = national_parties_container.findChildren("li" , recursive=False)
+            for child in national_parties_container_children:
+                unparsed_period = child.select_one("strong").text
+                period = extract_period_from(unparsed_period)
+                national_party_name, national_party_nation = extract_national_party_from(child.text, unparsed_period)
+                national_party = [party for party in national_parties if party.name == national_party_name]
+                assert len(national_party) < 2
+                if len(national_party) == 1:
+                    national_party[0].members.add(Membership(mep, period.start_date, period.end_date))
+                else:
+                    new_party = NationalParty(national_party_name, national_party_nation)
+                    new_party.members.add(Membership(mep, period.start_date, period.end_date))
+        else:
+            logger.warn(f"No details for {mep_data_url}, skipping")
 
 def extract_national_party_from(child: str, unparsed_period: str) -> tuple[str, str]:
     party_name_start = len(unparsed_period) + len(" : ")
