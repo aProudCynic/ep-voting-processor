@@ -268,7 +268,7 @@ def extract_national_party_from(child: str, unparsed_period: str) -> tuple[str, 
     party_name_end = child.rindex(" (")
     party_name = child[party_name_start:party_name_end]
     party_nation_start = party_name_end + len(" (")
-    party_nation = child[party_nation_start:]
+    party_nation = child[party_nation_start:-1]
     return party_name, party_nation
 
 def extract_political_group_from(party_membership_info: str, unparsed_period: str) -> str:
