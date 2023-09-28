@@ -42,8 +42,17 @@ def parse_xml(xml_data) -> Tuple[str, Optional[str], str, str]:
 
 
 def fetch_mep_xml(url: str) -> str:
-    response = requests.get(url)
-    return response.text
+    cache_file_name = sub(r"[^a-z0-9]", "", url)
+    cache_file_uri = f"xml/{cache_file_name}.xml"
+    if os.path.exists(cache_file_uri):
+        with open(cache_file_uri) as cached_xml:
+            return cached_xml.read()
+    else:
+        response = requests.get(url)
+        content = response.text
+        with open(cache_file_uri, "w") as cached_xml:
+            cached_xml.write(content)
+        return content
 
 
 def combine_with_incoming_mep_data(political_groups: list[EUPoliticalGroup]) -> list[EUPoliticalGroup]:
