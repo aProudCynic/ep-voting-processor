@@ -1,10 +1,12 @@
 from datetime import datetime, date
+import os
 from time import sleep, strptime
 from typing import (
     List,
     Optional,
     Tuple,
 )
+from re import sub
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -22,7 +24,7 @@ from models import (
     Period,
 )
 
-POLITICAL_GROUPS = {
+political_groups = {
     EUPoliticalGroup("Group of the European People's Party (Christian Democrats)", ["PPE", "EPP"]),
     EUPoliticalGroup("Group of the Progressive Alliance of Socialists and Democrats in the European Parliament", ["S&amp;D", "S&D"]),
     EUPoliticalGroup("Renew Europe Group", ["ECR"]),
@@ -223,17 +225,29 @@ def load_mep_data() -> List[EUPoliticalGroup]:
             national_parties_container_children = national_parties_container.findChildren("li" , recursive=False)
             for child in national_parties_container_children:
                 unparsed_period = child.select_one("strong").text
-                period = extract_period_from(unparsed_period)
+                national_party_membership_period = extract_period_from(unparsed_period)
                 national_party_name, national_party_nation = extract_national_party_from(child.text, unparsed_period)
-                national_party = [party for party in national_parties if party.name == national_party_name and party.country == national_party_nation]
-                assert len(national_party) < 2
-                if len(national_party) == 1:
-                    national_party[0].members.add(Membership(mep, period.start_date, period.end_date))
+                national_parties_found = [party for party in national_parties if party.name == national_party_name and party.country == national_party_nation]
+                assert len(national_parties_found) < 2
+                national_party = national_parties_found[0] if len(national_parties_found) == 1 else NationalParty(national_party_name, national_party_nation)
+                national_party.members.add(Membership(mep, national_party_membership_period))
+                if len(national_parties_found) == 0:
+                    national_parties.add(national_party)
+                political_group_where_party_is_already_member = [group for group in political_groups if party_is_member_of_group(group, national_party)]
+                if not political_group_where_party_is_already_member:
+                    political_group_data = [data for data in political_group_membership_data if data[1].is_other_period_in_period(national_party_membership_period)]
+                    new_group_membership = Membership(national_party, national_party_membership_period)
+                    # find political group by name and add membership
                 else:
-                    new_party = NationalParty(national_party_name, national_party_nation)
-                    new_party.members.add(Membership(mep, period.start_date, period.end_date))
+                    pass # expand_membership if needed
         else:
             logger.warn(f"No details for {mep_data_url}, skipping")
+    return political_groups
+
+def party_is_member_of_group(political_group: EUPoliticalGroup, national_party: NationalParty) -> bool:
+    national_parties_found = [membership for membership in political_group.members if membership.member == national_party]
+    assert len(national_parties_found) < 2
+    return national_parties_found == 1
 
 
 def extract_political_group_membership_data_from(political_groups_container_child) -> tuple[str, Period]:
