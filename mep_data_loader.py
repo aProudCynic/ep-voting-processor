@@ -223,10 +223,10 @@ def load_mep_data() -> List[EUPoliticalGroup]:
             political_group_membership_data = extract_political_group_memberships(details_containers)
             national_parties_container = details_containers[1]
             national_parties_container_children = national_parties_container.findChildren("li" , recursive=False)
-            for child in national_parties_container_children:
-                unparsed_period = child.select_one("strong").text
+            for national_party_data_container in national_parties_container_children:
+                unparsed_period = national_party_data_container.select_one("strong").text
                 national_party_membership_period = extract_period_from(unparsed_period)
-                national_party_name, national_party_nation = extract_national_party_from(child.text, unparsed_period)
+                national_party_name, national_party_nation = extract_national_party_from(national_party_data_container.text, unparsed_period)
                 national_parties_found = [party for party in national_parties if party.name == national_party_name and party.country == national_party_nation]
                 assert len(national_parties_found) < 2
                 national_party = national_parties_found[0] if len(national_parties_found) == 1 else NationalParty(national_party_name, national_party_nation)
