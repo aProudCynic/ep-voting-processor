@@ -38,8 +38,22 @@ class Period:
         self.start_date = start_date
         self.end_date = end_date
 
-    def is_in_period(self, date_to_check: date):
+    def is_date_in_period(self, date_to_check: date) -> bool:
         return date_to_check >= self.start_date and (self.end_date is None or date_to_check <= self.end_date)
+
+    def is_other_period_in_period(self, period_to_check) -> bool:
+        return self.is_date_in_period(period_to_check.start_date) and self.is_date_in_period(period_to_check.end_date)
+
+    def __key(self):
+        return (self.start_date, self.end_date)
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self.__key() == other.__key()
+        return NotImplemented
 
 
 T = TypeVar('T')
@@ -65,7 +79,7 @@ class Memberships(Generic[T]):
         self._memberships = []
 
     def get_members_at(self, date_to_check: date):
-        return [membership.member for membership in self._memberships if membership.period.is_in_period(date_to_check)]
+        return [membership.member for membership in self._memberships if membership.period.is_date_in_period(date_to_check)]
     
     def add(self, membership: Membership[T]):
         self._memberships.append(membership)
