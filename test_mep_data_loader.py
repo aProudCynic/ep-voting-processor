@@ -2,7 +2,7 @@ import unittest
 from collections import Counter
 
 from main import calculate_cohesion
-from mep_data_loader import extract_last_name
+from mep_data_loader import extract_last_name, extract_national_party_from
 
 
 class TestExtractLastName(unittest.TestCase):
@@ -27,3 +27,12 @@ class TestCalculateCohesion(unittest.TestCase):
 
     def test_low_cohesion(self):
         self.assertEqual(50.0, calculate_cohesion(Counter({'For': 2, 'Against': 4, 'Abstention': 2})))
+
+class TestExtractNationalParty(unittest.TestCase):
+
+    def test_extract_national_party_from_party_name(self):
+        self.assertEqual("Bezpartyjna", extract_national_party_from("02-07-2019 / 16-07-2019 : Bezpartyjna (Poland)", "02-07-2019 / 16-07-2019")[0])
+
+
+    def test_extract_national_party_from_party_country(self):
+        self.assertEqual("Poland", extract_national_party_from("02-07-2019 / 16-07-2019 : Bezpartyjna (Poland)", "02-07-2019 / 16-07-2019")[1])
