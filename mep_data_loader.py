@@ -209,13 +209,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
         logging.info(f"processing {mep_data_url}...")
         details_containers = soup.select(".erpl_meps-status-list > .erpl_meps-status > ul")
         if len(details_containers) > 0:
-            political_groups_container = details_containers[0]
-            political_groups_container_children = political_groups_container.findChildren("li" , recursive=False)
-            for child in political_groups_container_children:
-                unparsed_period = child.select_one("strong").text
-                period = extract_period_from(unparsed_period)
-                political_group_name = extract_political_group_from(child.text, unparsed_period)
-                # TODO add party
+            political_group_membership_data = extract_political_group_memberships(details_containers)
             national_parties_container = details_containers[1]
             national_parties_container_children = national_parties_container.findChildren("li" , recursive=False)
             for child in national_parties_container_children:
@@ -231,6 +225,20 @@ def load_mep_data() -> List[EUPoliticalGroup]:
                     new_party.members.add(Membership(mep, period.start_date, period.end_date))
         else:
             logger.warn(f"No details for {mep_data_url}, skipping")
+
+
+def extract_political_group_membership_data_from(political_groups_container_child) -> tuple[str, Period]:
+    unparsed_period = political_groups_container_child.select_one("strong").text
+    period = extract_period_from(unparsed_period)
+    political_group_name = extract_political_group_from(political_groups_container_child.text, unparsed_period)
+    return political_group_name, period
+
+
+def extract_political_group_memberships(details_containers) -> list[tuple[str, Period]]:
+    political_groups_container = details_containers[0]
+    political_groups_container_children = political_groups_container.findChildren("li" , recursive=False)
+    return [extract_political_group_membership_data_from(child) for child in political_groups_container_children]
+
 
 def extract_national_party_from(child: str, unparsed_period: str) -> tuple[str, str]:
     party_name_start = len(unparsed_period) + len(" : ")
