@@ -149,9 +149,9 @@ class EUPoliticalGroup:
     name: str
     members: Memberships[Union[NationalParty, MEP]]
 
-    def __init__(self, ids: list[str], name: str):
-        self.ids = ids
+    def __init__(self, name: str, ids: list[str]):
         self.name = name
+        self.ids = ids
         self.members = Memberships()
 
     def get_member_party(self, member_party_name: str, member_at=date.today()) -> NationalParty:
