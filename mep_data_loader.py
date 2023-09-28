@@ -27,7 +27,8 @@ from models import (
 political_groups = {
     EUPoliticalGroup("Group of the European People's Party (Christian Democrats)", ["PPE", "EPP"]),
     EUPoliticalGroup("Group of the Progressive Alliance of Socialists and Democrats in the European Parliament", ["S&amp;D", "S&D"]),
-    EUPoliticalGroup("Renew Europe Group", ["ECR"]),
+    EUPoliticalGroup("Renew Europe Group", ["Renew"]),
+    EUPoliticalGroup("European Conservatives and Reformists Group", ["ECR"]),
     EUPoliticalGroup("Group of the Greens/European Free Alliance", ["Verts/ALE", "Greens/EFA"]),
     EUPoliticalGroup("The Left group in the European Parliament - GUE/NGL", ["The Left", "GUE/NGL"]),
     EUPoliticalGroup("Identity and Democracy Group", ["ID"]),
