@@ -238,12 +238,19 @@ def load_mep_data() -> List[EUPoliticalGroup]:
                 if not political_group_where_party_is_already_member:
                     political_group_data = [data for data in political_group_membership_data if data[1].is_other_period_in_period(national_party_membership_period)]
                     new_group_membership = Membership(national_party, national_party_membership_period)
-                    # find political group by name and add membership
+                    found_group = find_political_group_by_name(political_groups, political_group_data[0])
                 else:
                     pass # expand_membership if needed
         else:
             logger.warn(f"No details for {mep_data_url}, skipping")
     return political_groups
+
+
+def find_political_group_by_name(political_groups_to_be_searched: list[EUPoliticalGroup], political_group_name: str):
+    found_groups = [group for group in political_groups_to_be_searched if group.name == political_group_name]
+    assert len(found_groups) == 1, f"No political group named {political_group_name} found"
+    return found_groups[0]
+
 
 def party_is_member_of_group(political_group: EUPoliticalGroup, national_party: NationalParty) -> bool:
     national_parties_found = [membership for membership in political_group.members if membership.member == national_party]
