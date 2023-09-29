@@ -39,10 +39,16 @@ class Period:
         self.end_date = end_date
 
     def is_date_in_period(self, date_to_check: date) -> bool:
-        return date_to_check >= self.start_date and (self.end_date is None or date_to_check <= self.end_date)
+        return date_to_check is not None and date_to_check >= self.start_date and (self.end_date is None or date_to_check <= self.end_date)
 
     def is_other_period_in_period(self, period_to_check) -> bool:
-        return self.is_date_in_period(period_to_check.start_date) and self.is_date_in_period(period_to_check.end_date)
+        return (
+            (self.start_date is None and period_to_check.start_date is None)
+            or self.is_date_in_period(period_to_check.start_date)
+        ) and (
+            (self.end_date is None and period_to_check.end_date is None)
+            or self.is_date_in_period(period_to_check.end_date)
+        )
 
     def __key(self):
         return (self.start_date, self.end_date)
