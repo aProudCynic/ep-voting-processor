@@ -55,3 +55,18 @@ class TestPeriod(unittest.TestCase):
         period = Period(date(2023, 9, 26), None) 
         period_not_inside_other_period = Period(date(2023, 9, 25), None)
         self.assertFalse(period.is_other_period_in_period(period_not_inside_other_period))
+
+    def test_open_ended_vs_closed_period_inside(self):
+        period = Period(date(2023, 9, 26), None) 
+        period_not_inside_other_period = Period(date(2023, 9, 26), date(2023, 9, 28))
+        self.assertTrue(period.is_other_period_in_period(period_not_inside_other_period))
+
+    def test_open_ended_vs_closed_period_inside_2(self):
+        period = Period(date(2023, 9, 26), None) 
+        period_not_inside_other_period = Period(date(2023, 9, 27), date(2023, 9, 28))
+        self.assertTrue(period.is_other_period_in_period(period_not_inside_other_period))
+
+    def test_open_ended_vs_closed_period_not_inside_(self):
+        period = Period(date(2023, 9, 26), None) 
+        period_not_inside_other_period = Period(date(2023, 9, 25), date(2023, 9, 28))
+        self.assertFalse(period.is_other_period_in_period(period_not_inside_other_period))
