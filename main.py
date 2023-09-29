@@ -18,7 +18,7 @@ from const import (
     DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
 )
 from logger import create_logger
-from mep_data_loader import load_mep_data
+from loader.mep_data_loader import load_mep_data
 from models import EUPoliticalGroup
 
 VOTING_RECORD_FILE_PATH = 'voting_record.xml'
