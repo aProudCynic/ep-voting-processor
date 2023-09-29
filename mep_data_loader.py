@@ -1,6 +1,6 @@
 from datetime import datetime, date
 import os
-from time import sleep, strptime
+from time import sleep
 from typing import (
     List,
     Optional,
@@ -15,25 +15,16 @@ import re
 import logging
 
 from const import FIRST_DATE_OF_NINTH_EP_SESSION
+from eu_political_group_loader import extract_political_group_memberships, load_default_political_groups
+from loader_util import extract_period_from
 from logger import create_logger
 from models import (
     EUPoliticalGroup,
     NationalParty,
     MEP,
     Membership,
-    Period,
 )
 
-political_groups = {
-    EUPoliticalGroup("Group of the European People's Party (Christian Democrats)", ["PPE", "EPP"]),
-    EUPoliticalGroup("Group of the Progressive Alliance of Socialists and Democrats in the European Parliament", ["S&amp;D", "S&D"]),
-    EUPoliticalGroup("Renew Europe Group", ["Renew"]),
-    EUPoliticalGroup("European Conservatives and Reformists Group", ["ECR"]),
-    EUPoliticalGroup("Group of the Greens/European Free Alliance", ["Verts/ALE", "Greens/EFA"]),
-    EUPoliticalGroup("The Left group in the European Parliament - GUE/NGL", ["The Left", "GUE/NGL"], ["Group of the European United Left - Nordic Green Left"]),
-    EUPoliticalGroup("Identity and Democracy Group", ["ID"]),
-    EUPoliticalGroup("Non-attached Members", ["NI"])
-}
 
 def parse_xml(xml_data) -> Tuple[str, Optional[str], str, str]:
     mep_name = xml_data.find('fullName').text
@@ -211,6 +202,7 @@ def load_mep_data() -> tuple(List[EUPoliticalGroup], List[NationalParty]):
             create_national_parties_from("https://www.europarl.europa.eu/meps/en/incoming-outgoing/incoming/xml")            
         )
     )
+    political_groups = load_default_political_groups()
     for mep in all_meps:
         url_name_part = mep.name.upper().replace(" ", "_")
         mep_data_url = f"https://www.europarl.europa.eu/meps/en/{mep.id}/{url_name_part}/history/9#detailedcardmep"
@@ -252,19 +244,6 @@ def party_is_member_of_group(political_group: EUPoliticalGroup, national_party: 
     return national_parties_found == 1
 
 
-def extract_political_group_membership_data_from(political_groups_container_child) -> tuple[str, Period]:
-    unparsed_period = political_groups_container_child.select_one("strong").text
-    period = extract_period_from(unparsed_period)
-    political_group_name = extract_political_group_from(political_groups_container_child.text, unparsed_period)
-    return political_group_name, period
-
-
-def extract_political_group_memberships(details_containers) -> list[tuple[str, Period]]:
-    political_groups_container = details_containers[0]
-    political_groups_container_children = political_groups_container.findChildren("li" , recursive=False)
-    return [extract_political_group_membership_data_from(child) for child in political_groups_container_children]
-
-
 def extract_national_party_from(child: str, unparsed_period: str) -> tuple[str, str]:
     party_name_start = len(unparsed_period) + len(" : ")
     party_name_end = child.rindex(" (")
@@ -272,26 +251,7 @@ def extract_national_party_from(child: str, unparsed_period: str) -> tuple[str, 
     party_nation_start = party_name_end + len(" (")
     party_nation = child[party_nation_start:-1]
     return party_name, party_nation
-
-def extract_political_group_from(party_membership_info: str, unparsed_period: str) -> str:
-    if "Non-attached Members" in party_membership_info:
-        return "Non-attached Members"
-    group_name_start = len(unparsed_period) + len(" : ")
-    group_name_end = party_membership_info.rindex(" - ")
-    return party_membership_info[group_name_start:group_name_end]
-
-def extract_period_from(unparsed_period: str) -> Period:
-    if " / " in unparsed_period:
-        dates = unparsed_period.split(" / ")
-        start_date = strptime(dates[0], "%d-%m-%Y")
-        end_date = strptime(dates[0], "%d-%m-%Y")
-        return Period(start_date, end_date)
-    elif "..." in unparsed_period:
-        start_date = strptime(unparsed_period[:10], "%d-%m-%Y")
-        return Period(start_date)
-    else:
-        raise AssertionError(f"Neither divider character nor ellipsis is detected in date string: {unparsed_period}")
-    
+  
 
 def extract_last_name(mep_name):
     # David McAllister is the only MEP with non-capitalized last name
