@@ -254,7 +254,7 @@ def find_political_group_by_name(political_groups_to_be_searched: list[EUPolitic
 
 
 def party_is_member_of_group(political_group: EUPoliticalGroup, national_party: NationalParty) -> bool:
-    national_parties_found = [membership for membership in political_group.members if membership.member == national_party]
+    national_parties_found = [membership for membership in political_group.members._memberships if membership == national_party]
     assert len(national_parties_found) < 2
     return national_parties_found == 1
 
