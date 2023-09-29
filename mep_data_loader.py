@@ -203,9 +203,6 @@ def create_national_parties_from(xml_address: str) -> set[NationalParty]:
 
 def load_mep_data() -> tuple(List[EUPoliticalGroup], List[NationalParty]):
     logger = create_logger()
-    # default_mep_data = load_default_list()
-    # meps_with_incoming_data = combine_with_incoming_mep_data(default_mep_data)
-    # full_mep_data = add_outgoing_meps(meps_with_incoming_data)
     current_meps = create_meps_from("https://www.europarl.europa.eu/meps/en/full-list/xml/")
     former_meps = create_meps_from("https://www.europarl.europa.eu/meps/en/incoming-outgoing/outgoing/xml")
     all_meps = current_meps.union(former_meps)
