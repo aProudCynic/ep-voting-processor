@@ -201,7 +201,7 @@ def create_national_parties_from(xml_address: str) -> set[NationalParty]:
     return {create_national_party_from(mep_data) for mep_data in root_data}
 
 
-def load_mep_data() -> List[EUPoliticalGroup]:
+def load_mep_data() -> tuple(List[EUPoliticalGroup], List[NationalParty]):
     logger = create_logger()
     # default_mep_data = load_default_list()
     # meps_with_incoming_data = combine_with_incoming_mep_data(default_mep_data)
@@ -240,7 +240,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
                 political_group.members.add(political_group_membership)
         else:
             logger.warn(f"No details for {mep_data_url}, skipping")
-    return political_groups
+    return political_groups, national_parties
 
 
 def find_political_group_by_name(political_groups_to_be_searched: list[EUPoliticalGroup], political_group_name: str) -> EUPoliticalGroup:

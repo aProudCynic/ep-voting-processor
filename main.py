@@ -120,7 +120,7 @@ def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_d
 
 
 if __name__ == "__main__":
-    mep_data = load_mep_data()
+    eu_political_groups, national_parties = load_mep_data()
     independents = [political_group for political_group in mep_data if political_group.name == 'Non-attached Members'][0]
     fidesz = independents.get_member_party('Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt')
     # process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
