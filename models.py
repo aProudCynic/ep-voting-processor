@@ -43,10 +43,10 @@ class Period:
 
     def is_other_period_in_period(self, period_to_check) -> bool:
         return (
-            (self.start_date is None and period_to_check.start_date is None)
+            self.start_date is None
             or self.is_date_in_period(period_to_check.start_date)
         ) and (
-            (self.end_date is None and period_to_check.end_date is None)
+            self.end_date is None
             or self.is_date_in_period(period_to_check.end_date)
         )
 
