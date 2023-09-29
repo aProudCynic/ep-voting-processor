@@ -1,4 +1,5 @@
 from typing import (
+    Iterable,
     Optional,
     Union,
     TypeVar,
@@ -155,10 +156,11 @@ class EUPoliticalGroup:
     name: str
     members: Memberships[Union[NationalParty, MEP]]
 
-    def __init__(self, name: str, ids: list[str]):
+    def __init__(self, name: str, ids: list[str], aliases=None):
         self.name = name
         self.ids = ids
         self.members = Memberships()
+        self.aliases = aliases
 
     def get_member_party(self, member_party_name: str, member_at=date.today()) -> NationalParty:
         found_national_parties = [
@@ -166,6 +168,9 @@ class EUPoliticalGroup:
         ]
         assert len(found_national_parties) == 1 or len(found_national_parties) == 0
         return found_national_parties[0] if len(found_national_parties) else None
+
+    def has_name(self, name: str) -> bool:
+        return self.name == name or (self.aliases is not None and name in self.aliases)
 
     @classmethod
     def _pair_ids_with(self, name):

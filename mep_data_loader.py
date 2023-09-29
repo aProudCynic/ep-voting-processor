@@ -30,7 +30,7 @@ political_groups = {
     EUPoliticalGroup("Renew Europe Group", ["Renew"]),
     EUPoliticalGroup("European Conservatives and Reformists Group", ["ECR"]),
     EUPoliticalGroup("Group of the Greens/European Free Alliance", ["Verts/ALE", "Greens/EFA"]),
-    EUPoliticalGroup("The Left group in the European Parliament - GUE/NGL", ["The Left", "GUE/NGL"]),
+    EUPoliticalGroup("The Left group in the European Parliament - GUE/NGL", ["The Left", "GUE/NGL"], ["Group of the European United Left - Nordic Green Left"]),
     EUPoliticalGroup("Identity and Democracy Group", ["ID"]),
     EUPoliticalGroup("Non-attached Members", ["NI"])
 }
@@ -249,7 +249,7 @@ def load_mep_data() -> List[EUPoliticalGroup]:
 
 
 def find_political_group_by_name(political_groups_to_be_searched: list[EUPoliticalGroup], political_group_name: str):
-    found_groups = [group for group in political_groups_to_be_searched if group.name == political_group_name]
+    found_groups = [group for group in political_groups_to_be_searched if group.has_name(political_group_name)]
     assert len(found_groups) == 1, f"No political group named {political_group_name} found"
     return found_groups[0]
 
