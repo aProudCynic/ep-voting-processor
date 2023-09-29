@@ -237,8 +237,9 @@ def load_mep_data() -> List[EUPoliticalGroup]:
                 political_group_where_party_is_already_member = [group for group in political_groups if party_is_member_of_group(group, national_party)]
                 if not political_group_where_party_is_already_member:
                     political_group_data = [data for data in political_group_membership_data if data[1].is_other_period_in_period(national_party_membership_period)]
+                    political_group_name, political_group_membership_period = political_group_data[0]
                     new_group_membership = Membership(national_party, national_party_membership_period)
-                    found_group = find_political_group_by_name(political_groups, political_group_data[0])
+                    found_group = find_political_group_by_name(political_groups, political_group_name)
                     found_group.members.add(new_group_membership)
                 else:
                     pass # expand_membership if needed
