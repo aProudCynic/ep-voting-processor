@@ -221,7 +221,6 @@ def load_mep_data() -> List[EUPoliticalGroup]:
         logging.info(f"processing {mep_data_url}...")
         details_containers = soup.select(".erpl_meps-status-list > .erpl_meps-status > ul")
         if len(details_containers) > 0:
-            political_group_membership_data = extract_political_group_memberships(details_containers)
             national_parties_container = details_containers[1]
             national_parties_container_children = national_parties_container.findChildren("li" , recursive=False)
             for national_party_data_container in national_parties_container_children:
@@ -234,24 +233,17 @@ def load_mep_data() -> List[EUPoliticalGroup]:
                 national_party.members.add(Membership(mep, national_party_membership_period))
                 if len(national_parties_found) == 0:
                     national_parties.add(national_party)
-                political_group_where_party_is_already_member = [group for group in political_groups if party_is_member_of_group(group, national_party)]
-                if not political_group_where_party_is_already_member:
-                    political_group_data = [data for data in political_group_membership_data if data[1].is_other_period_in_period(national_party_membership_period)]
-                    if len(political_group_data) == 0:
-                        logger.warn(f"Inconsistent EU group and party data for {mep_data_url}, skip party-group relationship")
-                    else:
-                        political_group_name, political_group_membership_period = political_group_data[0]
-                        new_group_membership = Membership(national_party, national_party_membership_period)
-                        found_group = find_political_group_by_name(political_groups, political_group_name)
-                        found_group.members.add(new_group_membership)
-                else:
-                    pass # expand_membership if needed
+            eu_group_memberships_data = extract_political_group_memberships(details_containers)
+            for eu_group_name, eu_group_membership_period in eu_group_memberships_data:
+                political_group = find_political_group_by_name(political_groups, eu_group_name)
+                political_group_membership = Membership(mep, eu_group_membership_period.start_date, eu_group_membership_period.end_date)
+                political_group.members.add(political_group_membership)
         else:
             logger.warn(f"No details for {mep_data_url}, skipping")
     return political_groups
 
 
-def find_political_group_by_name(political_groups_to_be_searched: list[EUPoliticalGroup], political_group_name: str):
+def find_political_group_by_name(political_groups_to_be_searched: list[EUPoliticalGroup], political_group_name: str) -> EUPoliticalGroup:
     found_groups = [group for group in political_groups_to_be_searched if group.has_name(political_group_name)]
     assert len(found_groups) == 1, f"No political group named {political_group_name} found"
     return found_groups[0]

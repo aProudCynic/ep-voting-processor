@@ -154,7 +154,7 @@ class EUPoliticalGroup:
 
     ids: list[str]
     name: str
-    members: Memberships[Union[NationalParty, MEP]]
+    members: Memberships[MEP]
 
     def __init__(self, name: str, ids: list[str], aliases=None):
         self.name = name
