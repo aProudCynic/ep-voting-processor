@@ -1,5 +1,6 @@
 from datetime import datetime, date
 import os
+from os.path import exists
 from time import sleep
 from typing import (
     List,
@@ -193,6 +194,11 @@ def create_national_parties_from(xml_address: str) -> set[NationalParty]:
 
 
 def load_mep_data() -> tuple(List[EUPoliticalGroup], List[NationalParty]):
+    # TODO cache and if available, load
+    return fetch_mep_data()
+
+
+def fetch_mep_data() -> tuple(List[EUPoliticalGroup], List[NationalParty]):
     logger = create_logger()
     current_meps = create_meps_from("https://www.europarl.europa.eu/meps/en/full-list/xml/")
     former_meps = create_meps_from("https://www.europarl.europa.eu/meps/en/incoming-outgoing/outgoing/xml")
