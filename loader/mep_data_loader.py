@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup, Tag
 import xml.etree.ElementTree as ET
 import re
 import logging
+import pickle
 
 from const import FIRST_DATE_OF_NINTH_EP_SESSION
 from loader.eu_political_group_loader import extract_political_group_memberships, load_default_political_groups
@@ -193,9 +194,24 @@ def create_national_parties_from(xml_address: str) -> set[NationalParty]:
     return {create_national_party_from(mep_data) for mep_data in root_data}
 
 
-def load_mep_data() -> tuple(List[EUPoliticalGroup], List[NationalParty]):
-    # TODO cache and if available, load
-    return fetch_mep_data()
+def load_mep_data() -> tuple[List[EUPoliticalGroup], List[NationalParty]]:
+    cache_folder = "cache"
+    eu_groups_file_uri = f"{cache_folder}/eu_groups.pkl"
+    national_party_file_uri = f"{cache_folder}/national_parties.pkl"
+    if exists(eu_groups_file_uri) and exists(national_party_file_uri):
+        with open(eu_groups_file_uri, "rb") as eu_groups_file:
+            eu_groups = pickle.load(eu_groups_file)
+        with open(national_party_file_uri, "rb") as national_party_file:
+            national_parties = pickle.load(national_party_file)
+        return eu_groups, national_parties
+    else:
+        eu_groups, national_parties = fetch_mep_data()
+        with open(eu_groups_file_uri, "wb") as eu_groups_file:
+            pickle.dump(eu_groups, eu_groups_file)
+        with open(national_party_file_uri, "wb") as national_party_file:
+            pickle.dump(national_parties, national_party_file)
+        return eu_groups, national_parties
+
 
 
 def fetch_mep_data() -> tuple(List[EUPoliticalGroup], List[NationalParty]):

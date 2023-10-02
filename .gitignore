@@ -6,3 +6,4 @@ voting_record.xml
 __pycache__
 xml
 logger.log
+cache
