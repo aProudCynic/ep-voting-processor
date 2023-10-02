@@ -62,7 +62,7 @@ def calculate_cohesion(fidesz_votes: Counter) -> float:
     return majority_vote_count / total_vote_count * 100
 
 
-def process_voting_data(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
+def compare_voting_cohesion_with_ep_groups(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
     fidesz_political_group_voting_comparisons = {
         political_group_name_ids: Counter(same=0, different=0) for political_group_name_ids in EUPoliticalGroup.id_name_pairings
@@ -124,4 +124,4 @@ if __name__ == "__main__":
     independents = [political_group for political_group in mep_data if political_group.name == 'Non-attached Members'][0]
     fidesz = independents.get_member_party('Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt')
     # process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
-    process_voting_data(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), False)
+    compare_voting_cohesion_with_ep_groups(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), False)
