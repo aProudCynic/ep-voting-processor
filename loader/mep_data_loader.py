@@ -18,7 +18,7 @@ import pickle
 
 from const import FIRST_DATE_OF_NINTH_EP_SESSION
 from loader.eu_political_group_loader import extract_political_group_memberships, load_default_political_groups
-from loader_util import extract_period_from
+from loader.loader_util import extract_period_from
 from logger import create_logger
 from models import (
     EUPoliticalGroup,

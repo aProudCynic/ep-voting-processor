@@ -1,4 +1,4 @@
-from loader_util import extract_period_from
+from loader.loader_util import extract_period_from
 from models import EUPoliticalGroup, Period
 
 
