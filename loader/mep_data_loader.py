@@ -214,7 +214,7 @@ def load_mep_data() -> tuple[List[EUPoliticalGroup], List[NationalParty]]:
 
 
 
-def fetch_mep_data() -> tuple(List[EUPoliticalGroup], List[NationalParty]):
+def fetch_mep_data() -> tuple[List[EUPoliticalGroup], List[NationalParty]]:
     logger = create_logger()
     current_meps = create_meps_from("https://www.europarl.europa.eu/meps/en/full-list/xml/")
     former_meps = create_meps_from("https://www.europarl.europa.eu/meps/en/incoming-outgoing/outgoing/xml")
