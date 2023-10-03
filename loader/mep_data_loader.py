@@ -51,40 +51,6 @@ def fetch_mep_xml(url: str) -> str:
         return content
 
 
-def combine_with_incoming_mep_data(political_groups: list[EUPoliticalGroup]) -> list[EUPoliticalGroup]:
-    mep_xml = fetch_mep_xml("https://www.europarl.europa.eu/meps/en/incoming-outgoing/incoming/xml")
-    xml_tree = ET.ElementTree(ET.fromstring(mep_xml))
-    incoming_data = xml_tree.getroot()
-    for mep_data in incoming_data:
-        political_group_id = mep_data.find("politicalGroup").attrib['bodyCode']
-        try:
-            meps_political_group = [
-                political_group for political_group in political_groups if political_group_id in political_group.ids
-            ][0]
-        except Exception as e:
-            print(political_group_id)
-            raise e
-        meps_party_name = mep_data.find("nationalPoliticalGroup").text
-        print(meps_party_name)
-        start_date = parse_to_date(mep_data, "mandate-start")
-        end_date = parse_to_date(mep_data, "mandate-end")
-        meps_party = meps_political_group.get_member_party(meps_party_name)
-        name = mep_data.find("fullName").text
-        id = mep_data.find("id").text
-        if meps_party is None:
-            meps_party = search_meps_party_in_other_groups(political_groups, meps_party_name, end_date)
-            if meps_party is None:
-                new_mep_data = MEP(id, name)
-                meps_party = NationalParty(meps_party_name)
-                meps_party.members.add(Members)
-                meps_political_group.members.add(Membership(meps_party, start_date))
-        
-
-        mep = [mep for mep in meps_party.members.get_members_at(start_date) if mep.name == name]
-        assert mep is not None
-        mep
-
-
 def load_default_list() -> List[EUPoliticalGroup]:
     mep_xml = fetch_mep_xml("https://www.europarl.europa.eu/meps/en/full-list/xml/")
     xml_tree = ET.ElementTree(ET.fromstring(mep_xml))
