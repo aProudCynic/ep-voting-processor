@@ -70,9 +70,9 @@ class Membership(Generic[T]):
     member: T
     period: Period
 
-    def __init__(self, member, start_date, end_date=None):
+    def __init__(self, member, period: Period):
         self.member = member
-        self.period = Period(start_date, end_date)
+        self.period = period
 
 
 class NationalPartyMembership(Membership[MEP]):
