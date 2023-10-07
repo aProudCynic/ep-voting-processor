@@ -213,7 +213,7 @@ def fetch_mep_data() -> tuple[List[EUPoliticalGroup], List[NationalParty]]:
             eu_group_memberships_data = extract_political_group_memberships(details_containers)
             for eu_group_name, eu_group_membership_period in eu_group_memberships_data:
                 political_group = find_political_group_by_name(political_groups, eu_group_name)
-                political_group_membership = Membership(mep, eu_group_membership_period.start_date, eu_group_membership_period.end_date)
+                political_group_membership = Membership(mep, eu_group_membership_period)
                 political_group.members.add(political_group_membership)
         else:
             logger.warn(f"No details for {mep_data_url}, skipping")
