@@ -132,9 +132,14 @@ def compare_voting_cohesion_with_ep_groups(fidesz, start_date=FIRST_DATE_OF_NINT
     logger.info(fidesz_cohesion_overall_average)
 
 
+def find_party_by_name_and_country(national_parties: Iterable[NationalParty], name: str, country: str):
+    parties_by_name_and_country = [party for party in national_parties if party.name == name and party.country == country]
+    assert len(parties_by_name_and_country) == 1
+    return parties_by_name_and_country[0]
+    
+
 if __name__ == "__main__":
     eu_political_groups, national_parties = load_mep_data()
-    independents = [political_group for political_group in mep_data if political_group.name == 'Non-attached Members'][0]
-    fidesz = independents.get_member_party('Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt')
+    fidesz = find_party_by_name_and_country(national_parties, 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt', 'Hungary')
     # process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
     compare_voting_cohesion_with_ep_groups(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), False)
