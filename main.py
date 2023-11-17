@@ -6,7 +6,7 @@ from datetime import (
 from os import makedirs
 from os.path import exists
 from time import sleep
-from typing import Optional
+from typing import Iterable, Optional
 from sys import stdout
 
 import requests
@@ -19,7 +19,7 @@ from const import (
 )
 from logger import create_logger
 from loader.mep_data_loader import load_mep_data
-from models import EUPoliticalGroup
+from models import MEP, EUPoliticalGroup, NationalParty
 
 VOTING_RECORD_FILE_PATH = 'voting_record.xml'
 
@@ -29,6 +29,7 @@ VOTES = [
     'Abstention',
 ]
 
+mep_id_pers_id_pairings = {}
 
 def acquire_voting_data(date_to_examine, logger, offline=False) -> Optional[str]:
     foldername = "xml"
@@ -62,6 +63,18 @@ def calculate_cohesion(fidesz_votes: Counter) -> float:
     return majority_vote_count / total_vote_count * 100
 
 
+def is_fidesz_mep(mep_voting: ElementTree.Element, fidesz_meps: list[MEP]):
+    voting_mep_id = mep_voting.attrib.get('PersId')
+    alternate_id = mep_voting.attrib['MepId']
+    if voting_mep_id:
+        mep_id_pers_id_pairings[alternate_id] = voting_mep_id
+    else:
+        voting_mep_id = mep_id_pers_id_pairings[alternate_id]
+    assert voting_mep_id
+    fidesz_mep_ids = [mep.id for mep in fidesz_meps]
+    return voting_mep_id in fidesz_mep_ids
+
+
 def compare_voting_cohesion_with_ep_groups(fidesz, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
     fidesz_political_group_voting_comparisons = {
@@ -69,7 +82,7 @@ def compare_voting_cohesion_with_ep_groups(fidesz, start_date=FIRST_DATE_OF_NINT
     }
     fidesz_voting_cohesion_per_voting = []
     date_to_examine = start_date
-    fidesz_mep_ids = [fidesz_member.id for fidesz_member in fidesz.members.get_members_at(date_to_examine)]
+    fidesz_meps = [fidesz_member for fidesz_member in fidesz.members.get_members_at(date_to_examine)]
     while date_to_examine <= end_date:
         filename = acquire_voting_data(date_to_examine, logger, offline)
         if filename:
@@ -95,7 +108,7 @@ def compare_voting_cohesion_with_ep_groups(fidesz, start_date=FIRST_DATE_OF_NINT
                                             political_group_votes_counter[vote] = len(political_group_votes)
                                         if political_group_id == fidesz_eu_parliamentary_group:
                                             for mep_voting in political_group_votes:
-                                                if mep_voting.attrib['PersId'] in fidesz_mep_ids:
+                                                if is_fidesz_mep(mep_voting, fidesz_meps):
                                                     fidesz_votes_counter[vote] = fidesz_votes_counter.get(vote, 0) + 1
                             logger.debug(f'{political_group_name}: {political_group_votes}')
                             logger.debug(f'Fidesz: {fidesz_votes_counter}')
