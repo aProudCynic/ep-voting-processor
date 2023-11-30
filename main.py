@@ -115,7 +115,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                                 if is_mep_party_member(mep_voting, national_party_meps):
                                                     national_party_votes_counter[vote] = national_party_votes_counter.get(vote, 0) + 1
                             logger.debug(f'{political_group.name}: {political_group_votes}')
-                            logger.debug(f'Fidesz: {national_party_votes_counter}')
+                            logger.debug(f'national party: {national_party_votes_counter}')
                             political_group_majority_vote = select_max_voted(political_group_votes_counter)
                             party_majority_vote = select_max_voted(national_party_votes_counter)
                             if political_group_majority_vote is not None and party_majority_vote is not None:
