@@ -75,7 +75,7 @@ def is_mep_party_member(mep_voting: ElementTree.Element, fidesz_meps: list[MEP])
     return voting_mep_id in fidesz_mep_ids
 
 
-def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
+def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_political_groups: list[EUPoliticalGroup], start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
     political_group_voting_comparisons = {
         political_group_name_ids: Counter(same=0, different=0) for political_group_name_ids in EUPoliticalGroup.id_name_pairings
@@ -89,7 +89,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, start_
             with open(filename) as file:
                 xml_tree = ElementTree.parse(file)
                 root = xml_tree.getroot()
-                for political_group_name in EUPoliticalGroup.id_name_pairings:
+                for political_group in eu_political_groups:
                     for roll_call_vote_result in root:
                         if roll_call_vote_result.tag == "RollCallVote.Result":
                             political_group_votes_counter = Counter({vote: 0 for vote in VOTES})
@@ -104,13 +104,13 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, start_
                                         political_group_id = political_group_votes.attrib['Identifier']
                                         # TODO: process membeship change as part of the model, use that instead of baked-in condition
                                         eu_parliamentary_group_of_party = 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
-                                        if political_group_id in EUPoliticalGroup.id_name_pairings[political_group_name]:
+                                        if political_group_id in EUPoliticalGroup.id_name_pairings[political_group.name]:
                                             political_group_votes_counter[vote] = len(political_group_votes)
                                         if political_group_id == eu_parliamentary_group_of_party:
                                             for mep_voting in political_group_votes:
                                                 if is_mep_party_member(mep_voting, national_party_meps):
                                                     national_party_votes_counter[vote] = national_party_votes_counter.get(vote, 0) + 1
-                            logger.debug(f'{political_group_name}: {political_group_votes}')
+                            logger.debug(f'{political_group.name}: {political_group_votes}')
                             logger.debug(f'Fidesz: {national_party_votes_counter}')
                             political_group_majority_vote = select_max_voted(political_group_votes_counter)
                             party_majority_vote = select_max_voted(national_party_votes_counter)
@@ -118,10 +118,10 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, start_
                                 national_party_voting_cohesion_per_voting.append(calculate_cohesion(national_party_votes_counter))
                                 if political_group_majority_vote == party_majority_vote:
                                     logger.debug(f'both voted {party_majority_vote}')
-                                    political_group_voting_comparisons[political_group_name]['same'] = political_group_voting_comparisons[political_group_name]['same'] + 1
+                                    political_group_voting_comparisons[political_group]['same'] = political_group_voting_comparisons[political_group]['same'] + 1
                                 else:
-                                    logger.debug(f'Fidesz voted {party_majority_vote} while {political_group_name} with {political_group_majority_vote}')
-                                    political_group_voting_comparisons[political_group_name]['different'] = political_group_voting_comparisons[political_group_name]['different'] + 1
+                                    logger.debug(f'Fidesz voted {party_majority_vote} while {political_group} with {political_group_majority_vote}')
+                                    political_group_voting_comparisons[political_group]['different'] = political_group_voting_comparisons[political_group]['different'] + 1
         date_to_examine = date_to_examine + timedelta(days=1)
         if not offline:
             sleep(1)
@@ -142,4 +142,4 @@ if __name__ == "__main__":
     eu_political_groups, national_parties = load_mep_data()
     fidesz = find_party_by_name_and_country(national_parties, 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt', 'Hungary')
     # process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
-    compare_voting_cohesion_with_ep_groups(fidesz, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), False)
+    compare_voting_cohesion_with_ep_groups(fidesz, eu_political_groups, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), False)
