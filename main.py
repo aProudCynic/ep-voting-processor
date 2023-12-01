@@ -71,8 +71,8 @@ def is_mep_party_member(mep_voting: ElementTree.Element, party_meps: list[MEP]):
     else:
         voting_mep_id = mep_id_pers_id_pairings[alternate_id]
     assert voting_mep_id
-    fidesz_mep_ids = [mep.id for mep in party_meps]
-    return voting_mep_id in fidesz_mep_ids
+    party_mep_ids = [mep.id for mep in party_meps]
+    return voting_mep_id in party_mep_ids
 
 
 def find_group_ids_of_party(date_to_examine: date, political_groups: set[EUPoliticalGroup], national_party: NationalParty) -> list[str]:
