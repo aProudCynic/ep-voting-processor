@@ -107,7 +107,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                     for political_group_votes in result_by_vote:
                                         political_group_id = political_group_votes.attrib['Identifier']
                                         # TODO: move up
-                                        eu_parliamentary_group_of_party = find_group_of_party(date_to_examine, eu_political_groups)
+                                        eu_parliamentary_group_of_party = find_group_id_of_party(date_to_examine, eu_political_groups, national_party)
                                         if political_group_id in EUPoliticalGroup.id_name_pairings[political_group.name]:
                                             political_group_votes_counter[vote] = len(political_group_votes)
                                         if political_group_id == eu_parliamentary_group_of_party:

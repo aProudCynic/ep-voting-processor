@@ -162,7 +162,7 @@ class EUPoliticalGroup:
         self.members = Memberships()
         self.aliases = aliases
 
-    def get_member_party(self, member_party_name: str, member_at=date.today()) -> NationalParty:
+    def get_member_party_by_name(self, member_party_name: str, member_at=date.today()) -> NationalParty:
         found_national_parties = [
             member for member in self.members.get_members_at(member_at) if isinstance(member, NationalParty) and member_party_name == member.name
         ]

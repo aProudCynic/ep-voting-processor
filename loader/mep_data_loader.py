@@ -67,7 +67,7 @@ def load_default_list() -> List[EUPoliticalGroup]:
         else:
             assert len(same_political_groups) == 1
             meps_political_group = same_political_groups[0]
-        same_party_membership = meps_political_group.get_member_party(mep_party_name)
+        same_party_membership = meps_political_group.get_member_party_by_name(mep_party_name)
         if not same_party_membership:
             meps_party = NationalParty(mep_party_name)
             meps_political_group.members.add(Membership(meps_party, FIRST_DATE_OF_NINTH_EP_SESSION))
@@ -92,11 +92,11 @@ def search_meps_party_in_other_groups(
     other_groups_containing_party = [
         political_group
         for political_group in political_groups
-        if political_group.get_member_party(meps_party_name, date_to_check)
+        if political_group.get_member_party_by_name(meps_party_name, date_to_check)
     ]
     assert len(other_groups_containing_party) < 2
     # TODO resolve memberships' date
-    return other_groups_containing_party[0].get_member_party(meps_party_name, date_at_check) if len(other_groups_containing_party) == 1 else None
+    return other_groups_containing_party[0].get_member_party_by_name(meps_party_name, date_at_check) if len(other_groups_containing_party) == 1 else None
 
 
 def add_outgoing_meps(political_groups: list[EUPoliticalGroup]):
@@ -116,7 +116,7 @@ def add_outgoing_meps(political_groups: list[EUPoliticalGroup]):
         print(meps_party_name)
         start_date = parse_to_date(mep_data, "mandate-start")
         end_date = parse_to_date(mep_data, "mandate-end")
-        meps_party = meps_political_group.get_member_party(meps_party_name)
+        meps_party = meps_political_group.get_member_party_by_name(meps_party_name)
         if meps_party is None:
             meps_party = search_meps_party_in_other_groups(political_groups, meps_party_name, end_date)
             if meps_party is None:
