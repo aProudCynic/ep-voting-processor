@@ -112,6 +112,7 @@ def extract_political_group_votes_counter(roll_call_vote_result, political_group
 
 def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_political_groups: list[EUPoliticalGroup], start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
+    logger.setLevel(logging.INFO)
     political_group_voting_comparisons = {
         political_group_name_ids: Counter(same=0, different=0) for political_group_name_ids in EUPoliticalGroup.id_name_pairings
     }
