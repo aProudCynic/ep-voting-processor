@@ -151,7 +151,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
     logger.info(percentages)
     fidesz_cohesion_overall_average = sum(national_party_voting_cohesion_per_voting) / len(national_party_voting_cohesion_per_voting)
     logger.info(fidesz_cohesion_overall_average)
-    logger.info(non_coherent_votings)
+    logger.info(f"{len(non_coherent_votings)} non-coherent votings: {non_coherent_votings}")
 
 
 def find_party_by_name_and_country(national_parties: Iterable[NationalParty], name: str, country: str):
