@@ -121,6 +121,7 @@ class NationalParty:
 
 class EUPoliticalGroup:
 
+    # TODO eliminate
     id_name_pairings = {
         "Group of the European People's Party (Christian Democrats)": [
             "PPE",
