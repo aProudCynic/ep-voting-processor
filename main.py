@@ -99,13 +99,11 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                 root = xml_tree.getroot()
                 for roll_call_vote_result in root:
                     if roll_call_vote_result.tag == "RollCallVote.Result":
-                        for political_group in eu_political_groups:
-                            political_group_votes_counter = Counter({vote: 0 for vote in VOTES})
-                            national_party_votes_counter = Counter({vote: 0 for vote in VOTES})
-                            voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
+                        voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
+                        voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'    
                             voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'
-                            logger.debug(f'processing {voting_identifier}')
-                            for vote in VOTES:
+                        voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'    
+                        logger.debug(f'processing {voting_identifier}')
                                 result_by_vote = roll_call_vote_result.find(f'Result.{vote}')
                                 if result_by_vote:
                                     for political_group_votes in result_by_vote:
