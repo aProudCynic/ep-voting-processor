@@ -75,8 +75,10 @@ def is_mep_party_member(mep_voting: ElementTree.Element, fidesz_meps: list[MEP])
     return voting_mep_id in fidesz_mep_ids
 
 
-def find_group_of_party(date_to_examine: date, political_groups: list[EUPoliticalGroup]):
-    return 'NI' if date_to_examine >= DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP else 'PPE'
+def find_group_ids_of_party(date_to_examine: date, political_groups: set[EUPoliticalGroup], national_party: NationalParty) -> list[str]:
+    groups_of_party = [group for group in political_groups if group.is_party_a_member(national_party, date_to_examine)]
+    assert len(groups_of_party) == 1
+    return groups_of_party[0].ids
 
 
 def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_political_groups: list[EUPoliticalGroup], start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
@@ -107,7 +109,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                     for political_group_votes in result_by_vote:
                                         political_group_id = political_group_votes.attrib['Identifier']
                                         # TODO: move up
-                                        eu_parliamentary_group_of_party = find_group_id_of_party(date_to_examine, eu_political_groups, national_party)
+                                        eu_parliamentary_group_of_party = find_group_ids_of_party(date_to_examine, eu_political_groups, national_party)
                                         if political_group_id in EUPoliticalGroup.id_name_pairings[political_group.name]:
                                             political_group_votes_counter[vote] = len(political_group_votes)
                                         if political_group_id == eu_parliamentary_group_of_party:

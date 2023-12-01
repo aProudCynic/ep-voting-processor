@@ -170,6 +170,14 @@ class EUPoliticalGroup:
         assert len(found_national_parties) == 1 or len(found_national_parties) == 0
         return found_national_parties[0] if len(found_national_parties) else None
 
+    def is_party_a_member(self, national_party: NationalParty, member_at=date.today()) -> bool:
+        party_members = national_party.members.get_members_at(member_at)
+        return any(self.is_mep_a_member(party_member) for party_member in party_members)
+    
+    def is_mep_a_member(self, mep: MEP, member_at=date.today()) -> bool:
+        group_members = self.members.get_members_at(member_at)
+        return mep in group_members
+
     def has_name(self, name: str) -> bool:
         return self.name == name or (self.aliases is not None and name in self.aliases)
 
