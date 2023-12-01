@@ -95,9 +95,9 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
             with open(filename) as file:
                 xml_tree = ElementTree.parse(file)
                 root = xml_tree.getroot()
-                for political_group in eu_political_groups:
-                    for roll_call_vote_result in root:
-                        if roll_call_vote_result.tag == "RollCallVote.Result":
+                for roll_call_vote_result in root:
+                    if roll_call_vote_result.tag == "RollCallVote.Result":
+                        for political_group in eu_political_groups:
                             political_group_votes_counter = Counter({vote: 0 for vote in VOTES})
                             national_party_votes_counter = Counter({vote: 0 for vote in VOTES})
                             voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
