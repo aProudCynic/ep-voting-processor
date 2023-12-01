@@ -126,7 +126,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                 for roll_call_vote_result in root:
                     if roll_call_vote_result.tag == "RollCallVote.Result":
                         voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
-                        voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'    
+                        voting_identifier = voting_description.text if voting_description.text and voting_description.text.strip() else f'{voting_description.find("a").text} {voting_description.find("a").tail}'    
                         logger.debug(f'processing {voting_identifier}')
                         national_party_votes_counter = extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_of_party, national_party_meps)
                         logger.debug(f'national party: {national_party_votes_counter}')
