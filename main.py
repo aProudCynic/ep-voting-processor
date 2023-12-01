@@ -125,7 +125,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                     logger.debug(f'both voted {party_majority_vote}')
                                     political_group_voting_comparisons[political_group.name]['same'] = political_group_voting_comparisons[political_group.name]['same'] + 1
                                 else:
-                                    logger.debug(f'Fidesz voted {party_majority_vote} while {political_group} with {political_group_majority_vote}')
+                                    logger.debug(f'{national_party.name} voted {party_majority_vote} while {political_group.name} with {political_group_majority_vote}')
                                     political_group_voting_comparisons[political_group.name]['different'] = political_group_voting_comparisons[political_group.name]['different'] + 1
         date_to_examine = date_to_examine + timedelta(days=1)
         if not offline:
