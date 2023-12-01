@@ -110,9 +110,8 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                         political_group_id = political_group_votes.attrib['Identifier']
                                         # TODO: move up
                                         eu_parliamentary_group_of_party = find_group_ids_of_party(date_to_examine, eu_political_groups, national_party)
-                                        if political_group_id in EUPoliticalGroup.id_name_pairings[political_group.name]:
+                                        if political_group_id in eu_parliamentary_group_of_party:
                                             political_group_votes_counter[vote] = len(political_group_votes)
-                                        if political_group_id == eu_parliamentary_group_of_party:
                                             for mep_voting in political_group_votes:
                                                 if is_mep_party_member(mep_voting, national_party_meps):
                                                     national_party_votes_counter[vote] = national_party_votes_counter.get(vote, 0) + 1
@@ -124,10 +123,10 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                 national_party_voting_cohesion_per_voting.append(calculate_cohesion(national_party_votes_counter))
                                 if political_group_majority_vote == party_majority_vote:
                                     logger.debug(f'both voted {party_majority_vote}')
-                                    political_group_voting_comparisons[political_group]['same'] = political_group_voting_comparisons[political_group]['same'] + 1
+                                    political_group_voting_comparisons[political_group.name]['same'] = political_group_voting_comparisons[political_group.name]['same'] + 1
                                 else:
                                     logger.debug(f'Fidesz voted {party_majority_vote} while {political_group} with {political_group_majority_vote}')
-                                    political_group_voting_comparisons[political_group]['different'] = political_group_voting_comparisons[political_group]['different'] + 1
+                                    political_group_voting_comparisons[political_group.name]['different'] = political_group_voting_comparisons[political_group.name]['different'] + 1
         date_to_examine = date_to_examine + timedelta(days=1)
         if not offline:
             sleep(1)
