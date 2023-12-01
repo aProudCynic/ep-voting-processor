@@ -87,12 +87,14 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
         political_group_name_ids: Counter(same=0, different=0) for political_group_name_ids in EUPoliticalGroup.id_name_pairings
     }
     national_party_voting_cohesion_per_voting = []
+    non_coherent_votings = set()
     date_to_examine = start_date
     national_party_meps = national_party.members.get_members_at(date_to_examine)
     while date_to_examine <= end_date:
         filename = acquire_voting_data(date_to_examine, logger, offline)
         if filename:
             with open(filename) as file:
+                eu_parliamentary_group_of_party = find_group_ids_of_party(date_to_examine, eu_political_groups, national_party)
                 xml_tree = ElementTree.parse(file)
                 root = xml_tree.getroot()
                 for roll_call_vote_result in root:
@@ -108,8 +110,6 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                 if result_by_vote:
                                     for political_group_votes in result_by_vote:
                                         political_group_id = political_group_votes.attrib['Identifier']
-                                        # TODO: move up
-                                        eu_parliamentary_group_of_party = find_group_ids_of_party(date_to_examine, eu_political_groups, national_party)
                                         if political_group_id in eu_parliamentary_group_of_party:
                                             political_group_votes_counter[vote] = len(political_group_votes)
                                             for mep_voting in political_group_votes:
@@ -120,7 +120,10 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                             political_group_majority_vote = select_max_voted(political_group_votes_counter)
                             party_majority_vote = select_max_voted(national_party_votes_counter)
                             if political_group_majority_vote is not None and party_majority_vote is not None:
+                                cohesion = calculate_cohesion(national_party_votes_counter)
                                 national_party_voting_cohesion_per_voting.append(calculate_cohesion(national_party_votes_counter))
+                                if cohesion < 100:
+                                    non_coherent_votings.add(f'{date_to_examine} - {voting_identifier}')
                                 if political_group_majority_vote == party_majority_vote:
                                     logger.debug(f'both voted {party_majority_vote}')
                                     political_group_voting_comparisons[political_group.name]['same'] = political_group_voting_comparisons[political_group.name]['same'] + 1
@@ -135,6 +138,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
     logger.info(percentages)
     fidesz_cohesion_overall_average = sum(national_party_voting_cohesion_per_voting) / len(national_party_voting_cohesion_per_voting)
     logger.info(fidesz_cohesion_overall_average)
+    logger.info(non_coherent_votings)
 
 
 def find_party_by_name_and_country(national_parties: Iterable[NationalParty], name: str, country: str):
@@ -147,4 +151,4 @@ if __name__ == "__main__":
     eu_political_groups, national_parties = load_mep_data()
     fidesz = find_party_by_name_and_country(national_parties, 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt', 'Hungary')
     # process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
-    compare_voting_cohesion_with_ep_groups(fidesz, eu_political_groups, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), False)
+    compare_voting_cohesion_with_ep_groups(fidesz, eu_political_groups, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), True)
