@@ -130,18 +130,19 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                         logger.debug(f'processing {voting_identifier}')
                         national_party_votes_counter = extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_of_party, national_party_meps)
                         logger.debug(f'national party: {national_party_votes_counter}')
-                        for political_group in eu_political_groups:
-                            political_group_votes_counter = extract_political_group_votes_counter(roll_call_vote_result, political_group)
-                            political_group_majority_vote = select_max_voted(political_group_votes_counter)
-                            party_majority_vote = select_max_voted(national_party_votes_counter)
-                            if political_group_majority_vote is not None and party_majority_vote is not None:
-                                cohesion = calculate_cohesion(national_party_votes_counter)
-                                national_party_voting_cohesion_per_voting.append(calculate_cohesion(national_party_votes_counter))
-                                if cohesion < 100:
-                                    non_coherent_votings.add(f'{date_to_examine} - {voting_identifier}')
-                                comparison_result = 'same' if political_group_majority_vote == party_majority_vote else 'different'
-                                logger.debug(f'{comparison_result}: {national_party.name} voted {party_majority_vote} while {political_group.name} with {political_group_majority_vote}')
-                                political_group_voting_comparisons[political_group.name][comparison_result] = political_group_voting_comparisons[political_group.name][comparison_result] + 1
+                        party_majority_vote = select_max_voted(national_party_votes_counter)
+                        if party_majority_vote is not None:
+                            cohesion = calculate_cohesion(national_party_votes_counter)
+                            national_party_voting_cohesion_per_voting.append(calculate_cohesion(national_party_votes_counter))
+                            if cohesion < 100:
+                                non_coherent_votings.add(f'{date_to_examine} - {voting_identifier}')
+                            for political_group in eu_political_groups:
+                                political_group_votes_counter = extract_political_group_votes_counter(roll_call_vote_result, political_group)
+                                political_group_majority_vote = select_max_voted(political_group_votes_counter)
+                                if political_group_majority_vote is not None:
+                                    comparison_result = 'same' if political_group_majority_vote == party_majority_vote else 'different'
+                                    logger.debug(f'{comparison_result}: {national_party.name} voted {party_majority_vote} while {political_group.name} with {political_group_majority_vote}')
+                                    political_group_voting_comparisons[political_group.name][comparison_result] = political_group_voting_comparisons[political_group.name][comparison_result] + 1
         date_to_examine = date_to_examine + timedelta(days=1)
         if not offline:
             sleep(1)
