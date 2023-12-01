@@ -95,6 +95,18 @@ def extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_
     return national_party_votes_counter
 
 
+def extract_political_group_votes_counter(roll_call_vote_result, political_group: EUPoliticalGroup) -> Counter:
+    political_group_votes_counter = Counter({vote: 0 for vote in VOTES})
+    for vote in VOTES:
+        result_by_vote = roll_call_vote_result.find(f'Result.{vote}')
+        if result_by_vote:
+            for political_group_votes in result_by_vote:
+                political_group_id = political_group_votes.attrib['Identifier']
+                if political_group_id in political_group.ids:
+                    political_group_votes_counter[vote] = len(political_group_votes)
+    return political_group_votes_counter
+
+
 def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_political_groups: list[EUPoliticalGroup], start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
     political_group_voting_comparisons = {
@@ -119,14 +131,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                         national_party_votes_counter = extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_of_party, national_party_meps)
                         logger.debug(f'national party: {national_party_votes_counter}')
                         for political_group in eu_political_groups:
-                            political_group_votes_counter = Counter({vote: 0 for vote in VOTES})
-                            for vote in VOTES:
-                                result_by_vote = roll_call_vote_result.find(f'Result.{vote}')
-                                if result_by_vote:
-                                    for political_group_votes in result_by_vote:
-                                        political_group_id = political_group_votes.attrib['Identifier']
-                                        if political_group_id in political_group.ids:
-                                            political_group_votes_counter[vote] = len(political_group_votes)
+                            political_group_votes_counter = extract_political_group_votes_counter(roll_call_vote_result, political_group)
                             political_group_majority_vote = select_max_voted(political_group_votes_counter)
                             party_majority_vote = select_max_voted(national_party_votes_counter)
                             if political_group_majority_vote is not None and party_majority_vote is not None:
