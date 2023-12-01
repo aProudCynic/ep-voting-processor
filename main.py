@@ -101,19 +101,27 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                     if roll_call_vote_result.tag == "RollCallVote.Result":
                         voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
                         voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'    
-                            voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'
-                        voting_identifier = voting_description.text if voting_description.text is not None else f' {voting_description.find("a").text} {voting_description.find("a").tail}'    
                         logger.debug(f'processing {voting_identifier}')
+                        national_party_votes_counter = Counter({vote: 0 for vote in VOTES})
+                        for vote in VOTES:
                                 result_by_vote = roll_call_vote_result.find(f'Result.{vote}')
                                 if result_by_vote:
                                     for political_group_votes in result_by_vote:
                                         political_group_id = political_group_votes.attrib['Identifier']
                                         if political_group_id in eu_parliamentary_group_of_party:
-                                            political_group_votes_counter[vote] = len(political_group_votes)
                                             for mep_voting in political_group_votes:
                                                 if is_mep_party_member(mep_voting, national_party_meps):
                                                     national_party_votes_counter[vote] = national_party_votes_counter.get(vote, 0) + 1
-                            logger.debug(f'national party: {national_party_votes_counter}')
+                        logger.debug(f'national party: {national_party_votes_counter}')
+                        for political_group in eu_political_groups:
+                            political_group_votes_counter = Counter({vote: 0 for vote in VOTES})
+                            for vote in VOTES:
+                                result_by_vote = roll_call_vote_result.find(f'Result.{vote}')
+                                if result_by_vote:
+                                    for political_group_votes in result_by_vote:
+                                        political_group_id = political_group_votes.attrib['Identifier']
+                                        if political_group_id in political_group.ids:
+                                            political_group_votes_counter[vote] = len(political_group_votes)
                             political_group_majority_vote = select_max_voted(political_group_votes_counter)
                             party_majority_vote = select_max_voted(national_party_votes_counter)
                             if political_group_majority_vote is not None and party_majority_vote is not None:
