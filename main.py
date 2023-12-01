@@ -115,7 +115,6 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                             for mep_voting in political_group_votes:
                                                 if is_mep_party_member(mep_voting, national_party_meps):
                                                     national_party_votes_counter[vote] = national_party_votes_counter.get(vote, 0) + 1
-                            logger.debug(f'{political_group.name}: {political_group_votes}')
                             logger.debug(f'national party: {national_party_votes_counter}')
                             political_group_majority_vote = select_max_voted(political_group_votes_counter)
                             party_majority_vote = select_max_voted(national_party_votes_counter)
@@ -124,12 +123,9 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                                 national_party_voting_cohesion_per_voting.append(calculate_cohesion(national_party_votes_counter))
                                 if cohesion < 100:
                                     non_coherent_votings.add(f'{date_to_examine} - {voting_identifier}')
-                                if political_group_majority_vote == party_majority_vote:
-                                    logger.debug(f'both voted {party_majority_vote}')
-                                    political_group_voting_comparisons[political_group.name]['same'] = political_group_voting_comparisons[political_group.name]['same'] + 1
-                                else:
-                                    logger.debug(f'{national_party.name} voted {party_majority_vote} while {political_group.name} with {political_group_majority_vote}')
-                                    political_group_voting_comparisons[political_group.name]['different'] = political_group_voting_comparisons[political_group.name]['different'] + 1
+                                comparison_result = 'same' if political_group_majority_vote == party_majority_vote else 'different'
+                                logger.debug(f'{comparison_result}: {national_party.name} voted {party_majority_vote} while {political_group.name} with {political_group_majority_vote}')
+                                political_group_voting_comparisons[political_group.name][comparison_result] = political_group_voting_comparisons[political_group.name][comparison_result] + 1
         date_to_examine = date_to_examine + timedelta(days=1)
         if not offline:
             sleep(1)
