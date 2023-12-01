@@ -63,7 +63,7 @@ def calculate_cohesion(fidesz_votes: Counter) -> float:
     return majority_vote_count / total_vote_count * 100
 
 
-def is_mep_party_member(mep_voting: ElementTree.Element, fidesz_meps: list[MEP]):
+def is_mep_party_member(mep_voting: ElementTree.Element, party_meps: list[MEP]):
     voting_mep_id = mep_voting.attrib.get('PersId')
     alternate_id = mep_voting.attrib['MepId']
     if voting_mep_id:
@@ -71,7 +71,7 @@ def is_mep_party_member(mep_voting: ElementTree.Element, fidesz_meps: list[MEP])
     else:
         voting_mep_id = mep_id_pers_id_pairings[alternate_id]
     assert voting_mep_id
-    fidesz_mep_ids = [mep.id for mep in fidesz_meps]
+    fidesz_mep_ids = [mep.id for mep in party_meps]
     return voting_mep_id in fidesz_mep_ids
 
 
