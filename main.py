@@ -31,7 +31,7 @@ VOTES = [
 
 mep_id_pers_id_pairings = {}
 
-def acquire_voting_data(date_to_examine, logger, offline=False) -> Optional[str]:
+def load_voting_data(date_to_examine, logger, offline=False) -> Optional[str]:
     foldername = "xml"
     filename = f"{foldername}/{date_to_examine}.xml"
     if exists(filename):
@@ -122,7 +122,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
     date_to_examine = start_date
     national_party_meps = national_party.members.get_members_at(date_to_examine)
     while date_to_examine <= end_date:
-        filename = acquire_voting_data(date_to_examine, logger, offline)
+        filename = load_voting_data(date_to_examine, logger, offline)
         if filename:
             with open(filename) as file:
                 eu_parliamentary_group_of_party = find_group_ids_of_party(date_to_examine, eu_political_groups, national_party)
