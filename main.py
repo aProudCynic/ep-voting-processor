@@ -24,13 +24,9 @@ from models import MEP, EUPoliticalGroup, NationalParty
 
 VOTING_RECORD_FILE_PATH = 'voting_record.xml'
 
-VOTES = [
-    'For',
-    'Against',
-    'Abstention',
-]
+FIDESZ_NAME = 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt'
+KDNP_NAME = 'Kereszténydemokrata Néppárt'
 
-mep_id_pers_id_pairings = {}
 
 def load_voting_data(date_to_examine, logger, offline=False) -> Optional[str]:
     foldername = "xml"
