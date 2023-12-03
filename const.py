@@ -10,3 +10,4 @@ VOTES = [
 
 FIDESZ_NAME = 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt'
 KDNP_NAME = 'Kereszténydemokrata Néppárt'
+DK_NAME = 'Demokratikus Koalíció'
