@@ -72,7 +72,8 @@ def is_mep_party_member(mep_voting: ElementTree.Element, party_meps: list[MEP]):
         voting_mep_id = mep_id_pers_id_pairings.get(alternate_id)
     if not voting_mep_id:
         # TODO implement backup based on name and country
-        logging.error(f"No ID found for {mep_voting.text}")
+        # TODO switch to persistent solution
+        logging.error(f"No ID found for {mep_voting.text} (ID: {voting_mep_id}, alternative: {alternate_id})")
         return False
     party_mep_ids = [mep.id for mep in party_meps]
     return voting_mep_id in party_mep_ids
