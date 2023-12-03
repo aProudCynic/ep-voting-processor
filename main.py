@@ -15,6 +15,9 @@ from const import (
     DK_NAME,
     FIRST_DATE_OF_NINTH_EP_SESSION,
     DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
+    JOBBIK_CONSEVATIVES_NAME,
+    JOBBIK_NAME,
+    JOBBIK_NAME_CHANGE_REGISTERED,
     KDNP_NAME,
     MOMENTUM_NAME,
     VOTES,
@@ -142,5 +145,5 @@ def find_party_by_name_and_country(national_parties: Iterable[NationalParty], na
 if __name__ == "__main__":
     eu_political_groups, national_parties = load_mep_data()
     mep_id_pers_id_pairings = load_mep_ids()
-    party = find_party_by_name_and_country(national_parties, MOMENTUM_NAME, 'Hungary')
-    compare_voting_cohesion_with_ep_groups(party, eu_political_groups, mep_id_pers_id_pairings, FIRST_DATE_OF_NINTH_EP_SESSION, date.today(), True)
+    party = find_party_by_name_and_country(national_parties, JOBBIK_CONSEVATIVES_NAME, 'Hungary')
+    compare_voting_cohesion_with_ep_groups(party, eu_political_groups, mep_id_pers_id_pairings, JOBBIK_NAME_CHANGE_REGISTERED, date.today(), True)
