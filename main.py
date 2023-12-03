@@ -164,6 +164,6 @@ def find_party_by_name_and_country(national_parties: Iterable[NationalParty], na
 
 if __name__ == "__main__":
     eu_political_groups, national_parties = load_mep_data()
-    fidesz = find_party_by_name_and_country(national_parties, 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt', 'Hungary')
+    party = find_party_by_name_and_country(national_parties, KDNP_NAME, 'Hungary')
     # process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
-    compare_voting_cohesion_with_ep_groups(fidesz, eu_political_groups, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP + timedelta(days=1), date.today(), True)
+    compare_voting_cohesion_with_ep_groups(party, eu_political_groups, mep_id_pers_id_pairings, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, False)
