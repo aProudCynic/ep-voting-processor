@@ -3,13 +3,9 @@ from datetime import (
     date,
     timedelta,
 )
-from os import makedirs
-from os.path import exists
 from time import sleep
 from typing import Iterable, Optional
 from sys import stdout
-
-import requests
 import logging
 import xml.etree.ElementTree as ElementTree
 
@@ -18,6 +14,7 @@ from const import (
     DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
     VOTES,
 )
+from loader.voting_data_loader import load_voting_data
 from logger import create_logger
 from loader.mep_data_loader import load_mep_data
 from models import MEP, EUPoliticalGroup, NationalParty
@@ -26,26 +23,6 @@ VOTING_RECORD_FILE_PATH = 'voting_record.xml'
 
 FIDESZ_NAME = 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt'
 KDNP_NAME = 'Kereszténydemokrata Néppárt'
-
-
-def load_voting_data(date_to_examine, logger, offline=False) -> Optional[str]:
-    foldername = "xml"
-    filename = f"{foldername}/{date_to_examine}.xml"
-    if exists(filename):
-        return filename
-    elif not offline:
-        if not exists(foldername):
-            makedirs(foldername)
-        response = requests.get(f'https://www.europarl.europa.eu/doceo/document/PV-9-{date_to_examine}-RCV_FR.xml')
-        if response.status_code == 200:
-            with open(filename, "wb") as voting_record_file:
-                voting_record_file.write(response.content)
-            return filename
-        elif response.status_code == 404:
-            logger.debug(f'file for {date_to_examine} is missing, skipping on the assumption that no vote took place')
-            return None
-    else:
-        logger.debug(f'file for {date_to_examine} is missing, skipping due to offline mode')
 
 
 def select_max_voted(votes: Counter) -> Optional[str]:
