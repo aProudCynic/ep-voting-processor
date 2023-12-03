@@ -16,6 +16,7 @@ import xml.etree.ElementTree as ElementTree
 from const import (
     FIRST_DATE_OF_NINTH_EP_SESSION,
     DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
+    VOTES,
 )
 from logger import create_logger
 from loader.mep_data_loader import load_mep_data
