@@ -10,6 +10,8 @@ import logging
 import xml.etree.ElementTree as ElementTree
 
 from const import (
+    CHANCE_NAME,
+    DATE_OF_UJHELYI_QUITTING_MSZP,
     DK_NAME,
     FIRST_DATE_OF_NINTH_EP_SESSION,
     DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
