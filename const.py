@@ -7,3 +7,6 @@ VOTES = [
     'Against',
     'Abstention',
 ]
+
+FIDESZ_NAME = 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt'
+KDNP_NAME = 'Kereszténydemokrata Néppárt'

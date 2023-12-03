@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ElementTree
 from const import (
     FIRST_DATE_OF_NINTH_EP_SESSION,
     DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
+    KDNP_NAME,
     VOTES,
 )
 from loader.mep_id_loader import load_mep_ids
@@ -21,9 +22,6 @@ from loader.mep_data_loader import load_mep_data
 from models import MEP, EUPoliticalGroup, NationalParty
 
 VOTING_RECORD_FILE_PATH = 'voting_record.xml'
-
-FIDESZ_NAME = 'Fidesz-Magyar Polgári Szövetség-Kereszténydemokrata Néppárt'
-KDNP_NAME = 'Kereszténydemokrata Néppárt'
 
 
 def select_max_voted(votes: Counter) -> Optional[str]:
