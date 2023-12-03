@@ -14,6 +14,7 @@ from const import (
     DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP,
     VOTES,
 )
+from loader.mep_id_loader import load_mep_ids
 from loader.voting_data_loader import load_voting_data
 from logger import create_logger
 from loader.mep_data_loader import load_mep_data
@@ -37,16 +38,13 @@ def calculate_cohesion(fidesz_votes: Counter) -> float:
     return majority_vote_count / total_vote_count * 100
 
 
-def is_mep_party_member(mep_voting: ElementTree.Element, party_meps: list[MEP]):
+def is_mep_party_member(mep_voting: ElementTree.Element, party_meps: list[MEP], mep_id_pers_id_pairings: dict[int, int]) -> bool:
     voting_mep_id = mep_voting.attrib.get('PersId')
     alternate_id = mep_voting.attrib['MepId']
-    if voting_mep_id:
-        mep_id_pers_id_pairings[alternate_id] = voting_mep_id
-    else:
+    if not voting_mep_id:
         voting_mep_id = mep_id_pers_id_pairings.get(alternate_id)
     if not voting_mep_id:
         # TODO implement backup based on name and country
-        # TODO switch to persistent solution
         logging.error(f"No ID found for {mep_voting.text} (ID: {voting_mep_id}, alternative: {alternate_id})")
         return False
     party_mep_ids = [mep.id for mep in party_meps]
@@ -59,7 +57,7 @@ def find_group_ids_of_party(date_to_examine: date, political_groups: set[EUPolit
     return groups_of_party[0].ids
 
 
-def extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_of_party: list[str], national_party_meps: list[MEP]) -> Counter:
+def extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_of_party: list[str], national_party_meps: list[MEP], mep_id_pers_id_pairings: dict[int, int]) -> Counter:
     national_party_votes_counter = Counter({vote: 0 for vote in VOTES})
     for vote in VOTES:
         result_by_vote = roll_call_vote_result.find(f'Result.{vote}')
@@ -68,7 +66,7 @@ def extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_
                 political_group_id = political_group_votes.attrib['Identifier']
                 if political_group_id in eu_parliamentary_group_of_party:
                     for mep_voting in political_group_votes:
-                        if is_mep_party_member(mep_voting, national_party_meps):
+                        if is_mep_party_member(mep_voting, national_party_meps, mep_id_pers_id_pairings):
                             national_party_votes_counter[vote] = national_party_votes_counter.get(vote, 0) + 1
     return national_party_votes_counter
 
@@ -85,7 +83,7 @@ def extract_political_group_votes_counter(roll_call_vote_result, political_group
     return political_group_votes_counter
 
 
-def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_political_groups: list[EUPoliticalGroup], start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
+def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_political_groups: list[EUPoliticalGroup], mep_id_pers_id_pairings, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
     logger.setLevel(logging.DEBUG)
     political_group_voting_comparisons = {
@@ -107,7 +105,7 @@ def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_pol
                         voting_description = roll_call_vote_result.find("RollCallVote.Description.Text")
                         voting_identifier = voting_description.text if voting_description.text and voting_description.text.strip() else f'{voting_description.find("a").text} {voting_description.find("a").tail}'    
                         logger.debug(f'processing {voting_identifier}')
-                        national_party_votes_counter = extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_of_party, national_party_meps)
+                        national_party_votes_counter = extract_national_vote_counter(roll_call_vote_result, eu_parliamentary_group_of_party, national_party_meps, mep_id_pers_id_pairings)
                         logger.debug(f'national party: {national_party_votes_counter}')
                         party_majority_vote = select_max_voted(national_party_votes_counter)
                         if party_majority_vote is not None:
@@ -141,6 +139,7 @@ def find_party_by_name_and_country(national_parties: Iterable[NationalParty], na
 
 if __name__ == "__main__":
     eu_political_groups, national_parties = load_mep_data()
+    mep_id_pers_id_pairings = load_mep_ids()
     party = find_party_by_name_and_country(national_parties, KDNP_NAME, 'Hungary')
     # process_voting_data(fidesz, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, True)
     compare_voting_cohesion_with_ep_groups(party, eu_political_groups, mep_id_pers_id_pairings, FIRST_DATE_OF_NINTH_EP_SESSION, DATE_OF_FIDESZ_QUITTING_EPP_EP_GROUP, False)
