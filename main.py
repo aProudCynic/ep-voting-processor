@@ -20,6 +20,7 @@ from const import (
     JOBBIK_NAME_CHANGE_REGISTERED,
     KDNP_NAME,
     MOMENTUM_NAME,
+    MSZP_NAME,
     VOTES,
 )
 from loader.mep_id_loader import load_mep_ids
@@ -90,7 +91,7 @@ def extract_political_group_votes_counter(roll_call_vote_result, political_group
 
 def compare_voting_cohesion_with_ep_groups(national_party: NationalParty, eu_political_groups: list[EUPoliticalGroup], mep_id_pers_id_pairings, start_date=FIRST_DATE_OF_NINTH_EP_SESSION, end_date=date.today(), offline=False):
     logger = create_logger()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     political_group_voting_comparisons = {
         political_group_name_ids: Counter(same=0, different=0) for political_group_name_ids in EUPoliticalGroup.id_name_pairings
     }
@@ -145,5 +146,5 @@ def find_party_by_name_and_country(national_parties: Iterable[NationalParty], na
 if __name__ == "__main__":
     eu_political_groups, national_parties = load_mep_data()
     mep_id_pers_id_pairings = load_mep_ids()
-    party = find_party_by_name_and_country(national_parties, JOBBIK_CONSEVATIVES_NAME, 'Hungary')
-    compare_voting_cohesion_with_ep_groups(party, eu_political_groups, mep_id_pers_id_pairings, JOBBIK_NAME_CHANGE_REGISTERED, date.today(), True)
+    party = find_party_by_name_and_country(national_parties, CHANCE_NAME, 'Hungary')
+    compare_voting_cohesion_with_ep_groups(party, eu_political_groups, mep_id_pers_id_pairings, date(2022, 10, 18), date.today(), True)
